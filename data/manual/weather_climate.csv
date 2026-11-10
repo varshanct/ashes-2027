@@ -1,0 +1,8 @@
+venue,month,p_rain_day,avg_max_temp_c,source_url
+Trent Bridge,6,0.33,19.2,https://www.metoffice.gov.uk/research/climate/maps-and-data/location-specific-long-term-averages/gcrje93b8
+Lord's,6,0.28,21.6,https://www.metoffice.gov.uk/research/climate/maps-and-data/location-specific-long-term-averages/gcpsvg3nc
+Lord's,7,0.25,23.9,https://www.metoffice.gov.uk/research/climate/maps-and-data/location-specific-long-term-averages/gcpsvg3nc
+Edgbaston,7,0.31,21.5,https://www.metoffice.gov.uk/research/climate/maps-and-data/location-specific-long-term-averages/gcqdkjm6k
+Utilita Bowl,7,0.25,22.6,https://www.metoffice.gov.uk/research/climate/maps-and-data/location-specific-long-term-averages/gcp1844rg
+Kia Oval,7,0.25,23.9,https://www.metoffice.gov.uk/research/climate/maps-and-data/location-specific-long-term-averages/gcpsvg3nc
+Kia Oval,8,0.27,23.4,https://www.metoffice.gov.uk/research/climate/maps-and-data/location-specific-long-term-averages/gcpsvg3nc

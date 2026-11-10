@@ -1,0 +1,6 @@
+ground,tests,draw_rate,bat_first_win_rate,toss_winner_win_rate,avg_first_innings_runs,avg_overs_bowled,wickets,share_caught,share_bowled,share_lbw
+Trent Bridge,5,0.2,0.6,0.4,431.0,310.98,169,0.698,0.124,0.13
+Lord's,14,0.143,0.5,0.429,253.357,265.907,489,0.581,0.229,0.162
+Edgbaston,7,0.0,0.286,0.429,342.571,308.1,236,0.623,0.212,0.136
+Utilita Bowl,4,0.5,0.0,0.25,310.0,280.2,104,0.596,0.135,0.231
+Kia Oval,8,0.0,0.75,0.25,286.875,295.55,300,0.633,0.177,0.16

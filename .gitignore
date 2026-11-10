@@ -1,0 +1,13 @@
+# Raw downloads are large and can be re-downloaded; processed tables are rebuilt by code.
+data/raw/*
+!data/raw/tests_json/
+data/raw/tests_json/*
+data/processed/*
+outputs/*
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store

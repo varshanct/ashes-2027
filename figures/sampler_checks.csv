@@ -1,0 +1,9 @@
+parameter,elements,max_rhat,min_ess
+strength,286,1.003,2082.251
+sigma_start,1,1.001,1516.446
+sigma_drift,1,1.003,907.524
+home_advantage,1,1.001,5111.658
+draw_base,1,1.001,3057.152
+draw_trend,1,1.001,4072.314
+sigma_venue,1,1.008,654.159
+venue_effect,103,1.003,1813.131
