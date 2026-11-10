@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def sigmoid(x):
-    """The S-shaped curve that turns any number into a probability between 0 and 1."""
+    """Logistic function."""
     return 1 / (1 + np.exp(-x))
 
 
