@@ -43,7 +43,7 @@ def fit(model, draws=1000, tune=1000, chains=4, seed=2027, cores=None, progressb
     """Run NUTS and return each parameter's draws as plain arrays shaped (chains, draws, ...)."""
     with model:
         idata = pm.sample(draws=draws, tune=tune, chains=chains, cores=cores, random_seed=seed,
-                          target_accept=0.9, progressbar=progressbar)
+                          target_accept=0.95, progressbar=progressbar)
     samples = {name: np.asarray(idata.posterior[name].values) for name in PARAMETERS}
     divergences = int(np.asarray(idata.sample_stats["diverging"].values).sum())
     return samples, divergences

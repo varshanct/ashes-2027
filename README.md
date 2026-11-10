@@ -11,19 +11,19 @@ through to every series result.
 | Test | Ground | Dates | England win | Draw | Australia win |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Trent Bridge | 18–22 June | 47% | 10% | 43% |
-| 2 | Lord's | 30 June–4 July | 45% | 15% | 40% |
-| 3 | Edgbaston | 8–12 July | 47% | 11% | 42% |
+| 2 | Lord's | 30 June–4 July | 44% | 15% | 40% |
+| 3 | Edgbaston | 8–12 July | 46% | 11% | 42% |
 | 4 | Utilita Bowl | 21–25 July | 44% | 16% | 40% |
 | 5 | Kia Oval | 29 July–2 August | 47% | 10% | 43% |
 
 | Series | England win | Drawn series | Australia win | Australia retain the urn |
 | --- | --- | --- | --- | --- |
-| Model | 47% | 13% | 39% | 53% |
+| Model | 47% | 13% | 40% | 53% |
 | Model, if the Tests were independent | 47% | 14% | 39% | 53% |
 | My own forecast, written before any modelling | 42% | 16% | 42% | 58% |
 
-England are slight favourites at home because the model's home advantage (0.64) is a little larger than the gap
-between the teams (Australia 1.34, England 0.79 on the model's scale).
+England are slight favourites at home because the model's home advantage (0.63) is a little larger than the gap
+between the teams (Australia 1.33, England 0.78 on the model's scale).
 
 ## The question and the approach
 
@@ -34,7 +34,8 @@ between the teams (Australia 1.34, England 0.79 on the model's scale).
 3. **Profile the five grounds** from their history: draw rates, first-innings scores, overs bowled, the toss and how
    batters were dismissed.
 4. **Fit a Bayesian model** in PyMC with Hamiltonian Monte Carlo (NUTS).
-5. **Forecast each 2027 Test and the series**, and compare with a forecast written down before any modelling.
+5. **Back-test it** on the 2019 and 2023 Ashes, using only Tests played before each series.
+6. **Forecast each 2027 Test and the series**, and compare with a forecast written down before any modelling.
 
 ## The model
 
@@ -59,29 +60,44 @@ $$\log w = \beta_0 + v_{\text{venue}} + \tau \cdot \frac{\text{year} - 2019}{10}
 
 | Check | Result | Target |
 | --- | --- | --- |
-| Worst R-hat | 1.008 | below 1.01 |
-| Smallest effective sample size | 654 | above 400 |
+| Worst R-hat | 1.002 | below 1.01 |
+| Smallest effective sample size | 718 | above 400 |
 | Divergences | 0 | 0 |
 
-Four chains of 1,000 warm-up and 1,000 kept draws, with a target acceptance of 0.9. R-hat and effective sample size are
+Four chains of 1,000 warm-up and 1,000 kept draws, with a target acceptance of 0.95. R-hat and effective sample size are
 implemented from first principles in [`diagnostics.py`](src/cricket/diagnostics.py) and tested against cases with known
 answers. Full results are in [`figures/sampler_checks.csv`](figures/sampler_checks.csv).
+
+## How good is it?
+
+I tested the model on the 2019 and 2023 Ashes, fitting it only on Tests played before each series began.
+
+| Average per Test (lower is better) | Model | Past results | Equal thirds |
+| --- | --- | --- | --- |
+| Log loss | 1.06 | 1.10 | 1.10 |
+| Brier score | 0.65 | 0.67 | 0.67 |
+
+The model beat both simple forecasts in both series, but by a small margin over only ten Tests. It favoured
+England in every Test, and both series finished 2-2. Details are in
+[`figures/backtest_tests.csv`](figures/backtest_tests.csv) and [`DECISIONS.md`](DECISIONS.md).
+
+![Back-test: model chances before each Ashes Test, and what happened](figures/backtest.png)
 
 ## What the model learned
 
 | Parameter | Mean | 90% interval |
 | --- | --- | --- |
-| Home advantage | 0.64 | 0.52 to 0.76 |
+| Home advantage | 0.63 | 0.51 to 0.75 |
 | Draw trend per decade | −0.52 | −0.71 to −0.34 |
-| Australia strength, 2026 | 1.34 | 0.94 to 1.75 |
-| England strength, 2026 | 0.79 | 0.42 to 1.18 |
+| Australia strength, 2026 | 1.33 | 0.94 to 1.76 |
+| England strength, 2026 | 0.78 | 0.40 to 1.16 |
 
 - **Draws are becoming much rarer.** The draw band narrows by about 40% per decade. At the five grounds, 20% of Tests
   were drawn overall but 13% since 2019.
 - **Grounds differ beyond their weather.** Lord's draws more than any other well-sampled ground despite London being
   one of the drier fixtures; Trent Bridge, the wettest, draws among the least.
 - **Partial pooling at work.** The Utilita Bowl has a raw draw rate of 43% from only seven Tests. The model rates it
-  about the same as Lord's, with a 90% interval about 50% wider.
+  about the same as Lord's, with a 90% interval about 40% wider.
 
 ![Team strength over time](figures/team_strength.png)
 
@@ -103,13 +119,12 @@ answers. Full results are in [`figures/sampler_checks.csv`](figures/sampler_chec
 - **One home advantage for every team.**
 - **No historical match weather.** Each ground's effect already includes its typical summer weather. The Met Office
   climate averages in `data/manual/` explain those effects and can adjust a forecast in the week of each Test.
-- **Not yet back-tested** on past series.
+- **A small back-test.** Ten Tests is too few to rank models with confidence.
 
 ## Next steps
 
-1. Back-test on the 2019 and 2023 Ashes and on every year of Tests, using only data from before each one, scored against
-   simple baselines.
-2. Use the margin of victory, then ball-by-ball runs and wickets, so the model can follow real changes in form.
+1. Use the margin of victory, then ball-by-ball runs and wickets, so the model can follow real changes in form.
+2. Back-test on every year of Tests, not only two Ashes series, to give hundreds of scored forecasts.
 3. Build player-level strengths from the expected XIs, with availability per Test and a cover plan for replacements.
 
 ## Reproduce it
@@ -118,7 +133,7 @@ Requires [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
-uv run pytest                                      # 153 tests
+uv run pytest                                      # 160 tests
 ```
 
 Download the **Test matches (JSON)** and the **People register** from [Cricsheet](https://cricsheet.org/downloads/).
@@ -131,6 +146,7 @@ uv run python -m cricket.manual_data               # validate squads, availabili
 uv run python -m cricket.cover_plan                # validate the replacement plan
 uv run python -m cricket.grounds                   # ground profiles and charts
 uv run python -m cricket.grounds --since 2019-01-01
+uv run python -m cricket.backtest --tune 2000      # back-test on the 2019 and 2023 Ashes
 uv run python -m cricket.forecast                  # fit the model and forecast 2027
 ```
 
@@ -147,10 +163,11 @@ uv run python -m cricket.forecast                  # fit the model and forecast 
 | `src/cricket/bayes_model.py` | The PyMC model |
 | `src/cricket/diagnostics.py` | R-hat and effective sample size |
 | `src/cricket/predict.py` | Test and series forecasts from posterior draws |
+| `src/cricket/backtest.py` | Forecasts the 2019 and 2023 Ashes using only earlier Tests, and scores the forecasts |
 | `src/cricket/forecast.py` | Fits the model and produces the forecast |
 | `data/manual/` | Squads, availability, cover plan, fixtures, venues, climate and my own forecast |
 | `figures/` | Charts and results tables |
-| `tests/` | 153 tests |
+| `tests/` | 160 tests |
 | [`DECISIONS.md`](DECISIONS.md) | Every modelling and data decision, with reasons |
 
 ## Data sources

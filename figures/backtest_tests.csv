@@ -1,0 +1,11 @@
+series,test_no,venue,p_home,p_draw,p_away,date_start,result,log_loss_model,brier_model,log_loss_base_rates,brier_base_rates,log_loss_thirds,brier_thirds
+2019 Ashes,1,Edgbaston,0.502,0.185,0.313,2019-08-01,Australia won,1.162,0.758,1.331,0.853,1.099,0.667
+2019 Ashes,2,Lord's,0.486,0.214,0.3,2019-08-14,Draw,1.543,0.945,1.496,0.934,1.099,0.667
+2019 Ashes,3,Headingley,0.517,0.157,0.326,2019-08-22,England won,0.66,0.364,0.67,0.358,1.099,0.667
+2019 Ashes,4,Old Trafford,0.504,0.181,0.315,2019-09-04,Australia won,1.155,0.756,1.331,0.853,1.099,0.667
+2019 Ashes,5,Kia Oval,0.509,0.173,0.319,2019-09-12,England won,0.676,0.373,0.67,0.358,1.099,0.667
+2023 Ashes,1,Edgbaston,0.48,0.169,0.352,2023-06-16,Australia won,1.044,0.678,1.289,0.833,1.099,0.667
+2023 Ashes,2,Lord's,0.448,0.228,0.324,2023-06-28,Australia won,1.127,0.71,1.289,0.833,1.099,0.667
+2023 Ashes,3,Headingley,0.498,0.133,0.369,2023-07-06,England won,0.697,0.406,0.666,0.356,1.099,0.667
+2023 Ashes,4,Old Trafford,0.484,0.16,0.356,2023-07-19,Draw,1.833,1.067,1.559,0.964,1.099,0.667
+2023 Ashes,5,Kia Oval,0.489,0.15,0.361,2023-07-27,England won,0.715,0.413,0.666,0.356,1.099,0.667

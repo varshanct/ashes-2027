@@ -283,9 +283,9 @@ Why: each prior rules out only absurd values, so with 898 Tests the data decide.
 much narrower than its prior.
 
 ## 2026-11-10: Sampler settings and checks
-4 chains, each with 1,000 warm-up and 1,000 kept draws, using NUTS with a target acceptance of 0.9 for smaller,
-more careful steps. Each chain took about 6 seconds.
-Result: worst R-hat 1.008, smallest effective sample size 654, 0 divergences, so the posterior can be trusted.
+4 chains, each with 1,000 warm-up and 1,000 kept draws, using NUTS with a target acceptance of 0.95 for small,
+careful steps (raised from 0.9 after the back-test, see below). The fit took about 10 seconds.
+Result: worst R-hat 1.002, smallest effective sample size 718, 0 divergences, so the posterior can be trusted.
 
 ## 2026-11-10: R-hat and effective sample size written from first principles
 I wrote split R-hat and an effective sample size based on Geyer's initial positive sequence in NumPy, and tested them
@@ -307,13 +307,13 @@ stronger at Lord's and at Edgbaston. Treating the Tests as independent would ign
 It rates teams, not players, so the XIs, injuries, workloads between back-to-back Tests and the weather in the week
 of each Test are not yet used. Home advantage is the same for every team. These are the next things to add.
 
-## 2026-11-10: Findings from the first model forecast
-The fit is sound: worst R-hat 1.008, smallest effective sample size 654, 0 divergences.
+## 2026-11-10: Findings from the model forecast
+The fit is sound: worst R-hat 1.002, smallest effective sample size 718, 0 divergences.
 
-Strength in 2026 (0 = average Test side): Australia 1.34 (90% interval 0.94 to 1.75), England 0.79 (0.42 to 1.18).
-Australia are clearly, but not certainly, the stronger side; the intervals overlap only between 0.94 and 1.18.
+Strength in 2026 (0 = average Test side): Australia 1.33 (90% interval 0.94 to 1.76), England 0.78 (0.40 to 1.16).
+Australia are clearly, but not certainly, the stronger side; the intervals overlap only between 0.94 and 1.16.
 
-Home advantage is 0.64 (0.52 to 0.76), slightly larger than the gap between the teams (about 0.54). At home, England
+Home advantage is 0.63 (0.51 to 0.75), slightly larger than the gap between the teams (about 0.55). At home, England
 become slight favourites in every Test: 44% to 47%, against Australia's 40% to 43%.
 
 Draws are becoming much rarer: the draw trend is -0.52 per decade (-0.71 to -0.34), so the draw band narrows by about
@@ -321,10 +321,10 @@ Draws are becoming much rarer: the draw trend is -0.52 per decade (-0.71 to -0.3
 at Trent Bridge and the Kia Oval (10% each).
 
 Partial pooling at the Utilita Bowl: its raw draw rate was 43% from 7 Tests, but the model rates its ground effect
-(+0.23) about the same as Lord's (+0.24, raw rate 26% from 42 Tests). Its 90% interval is about 50% wider than Lord's
-(1.18 against 0.78), showing the extra uncertainty from so few Tests.
+(+0.23) about the same as Lord's (+0.24, raw rate 26% from 42 Tests). Its 90% interval is about 40% wider than Lord's
+(1.16 against 0.81), showing the extra uncertainty from so few Tests.
 
-Series: England win 47%, drawn series 13%, Australia win 39%, so Australia retain the urn 53% of the time.
+Series: England win 47%, drawn series 13%, Australia win 40%, so Australia retain the urn 53% of the time.
 Treating the Tests as independent changes this only slightly (drawn series 14%), because the uncertainty about the
 strength gap is modest compared with the randomness within each Test.
 
@@ -348,3 +348,46 @@ injuries (Hazlewood, Cummins), nor that England have played without Stokes since
 last two Ashes in England, both drawn 2-2. I treat this as a sound starting point. The next version needs more
 information from each Test, such as the margin of victory or runs and wickets from the ball-by-ball data, and
 player-level information before I trust its small England edge.
+
+---
+
+## Testing the model on past series
+
+## 2026-11-10: Back-testing on the 2019 and 2023 Ashes
+Before trusting the 2027 forecast I tested the same model on the two most recent home Ashes. For each series the
+model is fitted only on Tests played before its first day, and the home side is worked out from those Tests alone.
+A test checks this cut-off: it fails if the model sees any Test from inside the series window.
+
+## 2026-11-10: Scoring with log loss and the Brier score
+Log loss punishes confident wrong forecasts heavily, which matters when forecasts feed a betting price. The Brier
+score is gentler and bounded, so it shows whether one bad miss is driving the log loss. I report both, averaged
+per Test.
+
+## 2026-11-10: Two simple forecasts to beat
+Equal thirds knows nothing. Past results gives the share of home wins, draws and away wins in all earlier Tests.
+Beating equal thirds is easy. Beating past results shows that team strength and ground effects add information
+beyond "home sides win more". Ten Tests is a small sample, so this is a first check, not a final verdict.
+
+## 2026-11-10: Smaller sampler steps
+Two of the back-test fits produced two or three divergences out of 4,000 draws, depending on the seed, although R-hat
+and effective sample size were fine. I raised target_accept from 0.9 to 0.95, so NUTS takes smaller steps through the
+tightly curved parts of the posterior, and gave the back-test fits 2,000 warm-up steps. Every fit then ran with no
+divergences. I refitted the 2027 forecast with the new setting so both use the same model. No figure moved by more
+than a point, and England still win the series 47% of the time. No back-test score changed by more than 0.002.
+
+## 2026-11-10: Back-test results
+Fitted only on earlier Tests (622 before the 2019 Ashes, 771 before 2023), the model beat both simple forecasts in
+both series. Across the ten Tests its average log loss was 1.06, against 1.10 for past results and 1.10 for equal
+thirds. Its Brier score was 0.65, against 0.67 for both.
+
+The edge is real but small, and ten Tests is too few to rely on. The model made England favourites in every Test,
+at 45% to 52%, yet England and Australia won four Tests each and two were drawn. It made England series favourites
+both times (60% in 2019, 54% in 2023), and both series finished 2-2 with Australia keeping the urn. It gave a drawn
+series about 15% each time.
+
+Draws were partly right. Lord's had the highest draw chance in both series, and Lord's 2019 was drawn. Old Trafford
+2023, drawn through rain, was given only 16%, because the model cannot see the weather in the week of a Test.
+
+The forecasts barely move from one Test to the next, or from 2019 to 2023. That is the same weakness as the flat
+team strengths: win, draw or loss alone carries too little information. Adding the margin of victory is the next
+step, followed by this back-test again to see whether the edge grows.
