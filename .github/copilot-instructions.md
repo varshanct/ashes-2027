@@ -10,4 +10,4 @@ Project: forecast the 2027 men's Ashes (England v Australia, five Tests, June to
 - A Test has three outcomes: home win, draw, away win. Never drop draws.
 - Every new function gets a pytest test that would fail if the function were wrong.
 - Run `uv run pytest` before saying a task is finished, and report the result.
-- Record any modelling or data decision in `DECISIONS.md`
+- Record any modelling or data decision in `DECISIONS.md`.

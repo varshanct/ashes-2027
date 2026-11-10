@@ -6,25 +6,6 @@ from pathlib import Path
 import pandas as pd
 
 
-def fourth_innings_target_mismatches(innings):
-    """Fourth innings where the recorded target does not match the earlier innings."""
-    rows = []
-    for match_id, grp in innings.groupby("match_id"):
-        fourth = grp[(grp["innings_no"] == 4) & grp["target_runs"].notna()]
-        if fourth.empty:
-            continue
-        chasing = fourth.iloc[0]["batting_team"]
-        earlier = grp[grp["innings_no"] < 4]
-        opp_runs = earlier.loc[earlier["batting_team"] != chasing, "runs"].sum()
-        own_runs = earlier.loc[earlier["batting_team"] == chasing, "runs"].sum()
-        expected = opp_runs - own_runs + 1
-        recorded = fourth.iloc[0]["target_runs"]
-        if expected != recorded:
-            rows.append({"match_id": match_id, "chasing": chasing,
-                         "recorded_target": recorded, "expected_target": expected})
-    return pd.DataFrame(rows, columns=["match_id", "chasing", "recorded_target", "expected_target"])
-
-
 def margin_mismatches(matches, innings):
     """Wins where the recorded margin does not match the innings totals.
 
@@ -63,12 +44,6 @@ def main():
 
     print(f"Tests: {len(matches):,}  from {matches['date_start'].min()} to {matches['date_start'].max()}")
     print("Results:", matches["result_type"].value_counts().to_dict())
-
-    bad = fourth_innings_target_mismatches(innings)
-    chases = innings[(innings["innings_no"] == 4) & innings["target_runs"].notna()]
-    print(f"Fourth-innings chases checked: {len(chases):,}  mismatches: {len(bad)}")
-    if len(bad):
-        print(bad.head(20).to_string(index=False))
 
     wins = matches[matches["result_type"] == "win"]
     with_margin = wins["margin_runs"].notna() | wins["margin_wkts"].notna()

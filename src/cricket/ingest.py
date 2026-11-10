@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-# One official spelling per team. Add any new spellings you find here.
+# One official spelling per team.
 TEAM_ALIASES = {
     "U.A.E.": "United Arab Emirates",
     "UAE": "United Arab Emirates",

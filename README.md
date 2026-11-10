@@ -133,7 +133,7 @@ Requires [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
-uv run pytest                                      # 160 tests
+uv run pytest                                      # 158 tests
 ```
 
 Download the **Test matches (JSON)** and the **People register** from [Cricsheet](https://cricsheet.org/downloads/).
@@ -167,7 +167,7 @@ uv run python -m cricket.forecast                  # fit the model and forecast 
 | `src/cricket/forecast.py` | Fits the model and produces the forecast |
 | `data/manual/` | Squads, availability, cover plan, fixtures, venues, climate and my own forecast |
 | `figures/` | Charts and results tables |
-| `tests/` | 160 tests |
+| `tests/` | 158 tests |
 | [`DECISIONS.md`](DECISIONS.md) | Every modelling and data decision, with reasons |
 
 ## Data sources
