@@ -442,3 +442,33 @@ Australia's 4-1 win in 2025-26 barely shows.
 I use the margin version for the 2027 forecast. England remain slight favourites, but by less: a series win 45%
 (down from 47%), Australia 42% and a drawn series 13%, so Australia retain the urn 55% of the time. Each Test is close
 to even, with England between 43% and 46%. That is now within three points of my own forecast for the series.
+
+---
+
+## Testing on every year of Tests
+
+## 2026-11-10: A back-test on every year, not only two series
+Ten Ashes Tests is too few to tell two models apart, so I repeated the back-test for every year from 2015 to 2026.
+For each year the model is fitted only on Tests before 1 January, with runs per wicket worked out from those Tests
+alone, and it forecasts every Test that year in every country: 472 Tests in all. A Test involving a team with no
+earlier Tests cannot be forecast, so it is skipped; this happened once, for Ireland's first Test in 2018. The home
+side of each forecast Test comes from where the teams usually play, not from any result.
+
+## 2026-11-10: Findings from the yearly back-test
+Averaged over 472 Tests, the log loss was 0.884 for the results-only model, 0.890 with margins, 0.994 for past results
+and 1.099 for equal thirds. The Brier scores were 0.520, 0.524, 0.597 and 0.667. The results-only model beat past
+results on log loss in all 12 years.
+
+Margins made no reliable difference: better in 4 years (2017, 2018, 2021, 2026), worse in 8, and slightly worse
+overall. On the ten Ashes Tests margins had looked better (1.048 against 1.061), but that sample was too small, and
+the larger back-test does not confirm it.
+
+Sampler checks across the 24 fits: worst R-hat 1.012 in one fit, and 11 divergences in total, spread over four fits
+with at most 6 in any one. Each score is an average over 20 to 50 Tests a year, so these do not change the conclusion.
+
+## 2026-11-10: The results-only model produces the 2027 forecast
+I said I would choose the version from the back-test. On 472 Tests the two versions are tied, so I use the simpler
+one, which sees only results. It gives England a 47% chance of winning the series, Australia 40% and a drawn series
+13%, so Australia retain the urn 53% of the time. The version with margins gave England 45% and Australia 42%. Margins
+stay in the code as an option, and the strength chart from that version is kept, because it shows real changes in
+form that the results-only model smooths away, even though they do not improve the forecasts.
