@@ -29,8 +29,12 @@ def runs_per_wicket(innings):
 
 
 def margin_in_wickets(matches, rpw):
-    """Every win's margin in wickets: the wickets in hand, or the runs margin divided by runs per wicket."""
-    return (matches["margin_runs"] / rpw).fillna(matches["margin_wkts"])
+    """Every win's margin in wickets: the wickets in hand, or the runs margin divided by runs per wicket.
+
+    An innings win adds 10 wickets to its runs margin: the winner never needed its second innings.
+    """
+    innings_bonus = np.where(matches["margin_innings"].fillna(0) > 0, 10, 0)
+    return (matches["margin_runs"] / rpw + innings_bonus).fillna(matches["margin_wkts"])
 
 
 def build_model_table(matches, aliases, rpw=None):

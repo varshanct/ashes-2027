@@ -391,3 +391,54 @@ Draws were partly right. Lord's had the highest draw chance in both series, and 
 The forecasts barely move from one Test to the next, or from 2019 to 2023. That is the same weakness as the flat
 team strengths: win, draw or loss alone carries too little information. Adding the margin of victory is the next
 step, followed by this back-test again to see whether the edge grows.
+
+---
+
+## Adding the margin of victory
+
+## 2026-11-10: One scale for every winning margin
+Wins are recorded in runs or in wickets. I convert both to wickets: a wickets margin stays as it is, and a runs
+margin is divided by the average runs per wicket across all Test innings (32.6). An innings win adds 10 wickets,
+because the winner never needed its second innings. In the back-test the average uses only Tests before each series.
+
+## 2026-11-10: The log of the margin
+The model uses log(1 + margin in wickets). The difference between a 1-wicket and a 5-wicket win says a lot about two
+teams; the difference between a 400-run and a 500-run win says very little. The log keeps close results apart and
+squeezes the biggest wins together, so a few thrashings cannot dominate the fit.
+
+## 2026-11-10: Margins share the team strengths, through a truncated normal
+The result part of the model is unchanged. A second part says the size of each win follows a normal distribution
+whose mean grows with the winner's edge (strength gap plus home advantage), cut off at 0. The result already says
+who won, so cutting off at 0 means the margin adds only how much, without counting the win twice. The slope is
+forced to be positive, so a stronger winner is expected to win by more.
+
+## 2026-11-10: Margins as an option, tested side by side
+I kept the results-only model and added margins as a second version. The back-test fits both on the same Tests and
+scores both, so the comparison is fair. I chose which version produces the 2027 forecast from the back-test, not from
+whether the new forecast looked better.
+
+## 2026-11-10: Innings wins, a first attempt and a fix
+My first version counted an innings win by its runs margin alone, so "an innings and 12 runs" looked like one of the
+narrowest wins in the data. The margin slope came out at 0.03, almost no link between strength and the size of a
+win, and the back-test barely moved (log loss 1.059 against 1.061). Innings wins are what strong sides inflict on weak
+ones, so the most one-sided Tests were being recorded as close games. Adding 10 wickets for an innings win, to match
+the rule for wins by wickets, raised the slope to 0.17 and gave a clear improvement in the back-test.
+
+## 2026-11-10: More draws for the back-test
+One back-test fit with margins had a worst R-hat of 1.012, just over the 1.01 target. Doubling the kept draws to 2,000
+per chain brought every fit to 1.002 or below, with no divergences.
+
+## 2026-11-10: Findings with margins
+The back-test favours margins in both series. Across the ten Tests the log loss was 1.048 with margins against 1.061
+for results only, 1.097 for past results and 1.099 for equal thirds; the Brier score was 0.637 against 0.647, 0.670
+and 0.667. Before each series the margin version gave England about an even chance (48% in 2019, 50% in 2023), where
+results only gave 60% and 54%. Both series finished 2-2.
+
+On all Tests to 2026, the margin slope is 0.17 (0.14 to 0.21), so stronger winners clearly win by more, and the
+yearly step in team strength rises from 0.08 to 0.15. The strength chart now shows England's peak around 2010-11 and
+Australia's dip around 2010-13, which the results-only model smoothed away. It still smooths sharp changes:
+Australia's 4-1 win in 2025-26 barely shows.
+
+I use the margin version for the 2027 forecast. England remain slight favourites, but by less: a series win 45%
+(down from 47%), Australia 42% and a drawn series 13%, so Australia retain the urn 55% of the time. Each Test is close
+to even, with England between 43% and 46%. That is now within three points of my own forecast for the series.

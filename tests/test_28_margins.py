@@ -18,18 +18,21 @@ def test_runs_per_wicket():
 
 
 def test_margin_in_wickets_converts_runs_and_keeps_wickets():
-    matches = pd.DataFrame({"margin_runs": [100.0, None, None], "margin_wkts": [None, 6.0, None]})
+    matches = pd.DataFrame({"margin_runs": [100.0, None, 50.0, None],
+                            "margin_wkts": [None, 6.0, None, None],
+                            "margin_innings": [None, None, 1.0, None]})
     result = margin_in_wickets(matches, rpw=25)
     assert result.iloc[0] == 4          # 100 runs at 25 runs per wicket
     assert result.iloc[1] == 6          # 6 wickets stays 6
-    assert np.isnan(result.iloc[2])     # a draw has no margin
+    assert result.iloc[2] == 12         # an innings and 50 runs: 2 wickets, plus 10 for the unused innings
+    assert np.isnan(result.iloc[3])     # a draw has no margin
 
 
 def test_model_table_adds_log_margin_only_when_asked(raw_dir):
     matches = ingest_folder(raw_dir)["matches"]
     assert "margin" not in build_model_table(matches, ALIASES).columns
     table = build_model_table(matches, ALIASES, rpw=6.0).set_index("match_id")
-    assert table.loc["3001", "margin"] == pytest.approx(np.log1p(12 / 6))   # innings and 12 runs = 2 wickets
+    assert table.loc["3001", "margin"] == pytest.approx(np.log1p(12 / 6 + 10))   # innings and 12 runs
     assert table.loc["3002", "margin"] == pytest.approx(np.log1p(9))        # won by 9 wickets
     assert np.isnan(table.loc["3003", "margin"])                             # draw
 
@@ -40,7 +43,7 @@ def test_model_data_records_each_win_and_who_won(raw_dir):
     # Tests in date order: 3001 England (team1) won, 3002 Australia (team2) won, 3003 drawn.
     assert data.margin_idx.tolist() == [0, 1]
     assert data.margin_sign.tolist() == [1.0, -1.0]
-    np.testing.assert_allclose(data.margin, [np.log1p(2), np.log1p(9)])
+    np.testing.assert_allclose(data.margin, [np.log1p(12), np.log1p(9)])
 
 
 def test_model_data_without_margins_has_none(raw_dir):

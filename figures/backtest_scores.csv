@@ -1,7 +1,7 @@
-series,measure,Model,Past results,Equal thirds
-2019 Ashes,log loss,1.039,1.1,1.099
-2019 Ashes,Brier,0.639,0.671,0.667
-2023 Ashes,log loss,1.083,1.093,1.099
-2023 Ashes,Brier,0.655,0.669,0.667
-Both series,log loss,1.061,1.097,1.099
-Both series,Brier,0.647,0.67,0.667
+series,measure,Results only,With margins,Past results,Equal thirds
+2019 Ashes,log loss,1.039,1.018,1.1,1.099
+2019 Ashes,Brier,0.639,0.623,0.671,0.667
+2023 Ashes,log loss,1.083,1.078,1.093,1.099
+2023 Ashes,Brier,0.655,0.651,0.669,0.667
+Both series,log loss,1.061,1.048,1.097,1.099
+Both series,Brier,0.647,0.637,0.67,0.667
