@@ -1,5 +1,5 @@
 """Player ratings from ball-by-ball data: batting and bowling averages, weighted towards recent Tests and
-pulled towards the average Test player when a player has little data."""
+pulled towards the average for a player of the same type when a player has little data."""
 
 import argparse
 from pathlib import Path
@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 
 HALF_LIFE_YEARS = 2.0     # a Test two years ago counts half as much as one today
-PRIOR_OUTS = 10           # a batter with no record counts as 10 dismissals at the average
+PRIOR_OUTS = 10           # a batter with no record counts as 10 dismissals at the average for his position
+TOP_ORDER = 7             # batting positions 1 to 7 are the top order; 8 to 11 the lower order
 PRIOR_WICKETS = 10        # a bowler with no record counts as 10 wickets at the average
 NOT_BOWLERS_WICKETS = {"run out", "retired out", "obstructing the field", "timed out", "handled the ball"}
 
@@ -19,10 +20,18 @@ def recency_weights(dates, as_of, half_life=HALF_LIFE_YEARS):
     return 0.5 ** (age_years / half_life)
 
 
+def batting_positions(deliveries):
+    """Each player's usual batting position: the median order in which he first faced in each innings."""
+    first = deliveries.dropna(subset=["batter_id"]).drop_duplicates(["match_id", "innings_no", "batter_id"])
+    order = first.groupby(["match_id", "innings_no"]).cumcount() + 1
+    return order.groupby(first["batter_id"]).median()
+
+
 def player_ratings(deliveries, appearances, matches, as_of, half_life=HALF_LIFE_YEARS):
     """Every player's batting and bowling record from Tests that started before as_of.
 
-    bat_rating: runs per dismissal, recency-weighted and pulled towards the average (higher is better).
+    bat_rating: runs per dismissal, recency-weighted and pulled towards the average for his usual batting
+    position, top order or lower order (higher is better).
     bowl_rating: runs conceded per wicket, recency-weighted and pulled towards the average (lower is better).
     """
     start = matches.set_index("match_id")["date_start"]
@@ -49,16 +58,27 @@ def player_ratings(deliveries, appearances, matches, as_of, half_life=HALF_LIFE_
         "w_wickets": (bowled * d["w"]).groupby(d["bowler_id"]).sum(),
     }).fillna(0)
 
-    bat_mean = table["w_runs"].sum() / table["w_outs"].sum()
+    table["position"] = batting_positions(d)
+    top = (table["position"] <= TOP_ORDER).to_numpy()
+    overall = table["w_runs"].sum() / table["w_outs"].sum()
+    bat_mean_top = group_mean(table[top], overall)
+    bat_mean_lower = group_mean(table[~top], overall)
     bowl_mean = table["w_conceded"].sum() / table["w_wickets"].sum()
     table["bat_avg"] = table["runs"] / table["outs"].replace(0, np.nan)
     table["bowl_avg"] = table["conceded"] / table["wickets"].replace(0, np.nan)
-    table["bat_rating"] = (table["w_runs"] + PRIOR_OUTS * bat_mean) / (table["w_outs"] + PRIOR_OUTS)
+    bat_prior = np.where(top, bat_mean_top, bat_mean_lower)
+    table["bat_rating"] = (table["w_runs"] + PRIOR_OUTS * bat_prior) / (table["w_outs"] + PRIOR_OUTS)
     table["bowl_rating"] = ((table["w_conceded"] + PRIOR_WICKETS * bowl_mean)
                             / (table["w_wickets"] + PRIOR_WICKETS))
     table.index.name = "player_id"
-    table.attrs.update(bat_mean=bat_mean, bowl_mean=bowl_mean)
+    table.attrs.update(bat_mean_top=bat_mean_top, bat_mean_lower=bat_mean_lower, bowl_mean=bowl_mean)
     return table
+
+
+def group_mean(group, fallback):
+    """Weighted runs per dismissal for a group of batters, or the fallback if the group has no dismissals."""
+    outs = group["w_outs"].sum()
+    return group["w_runs"].sum() / outs if outs > 0 else fallback
 
 
 def count_tests(appearances, matches, as_of):
@@ -69,13 +89,19 @@ def count_tests(appearances, matches, as_of):
 
 
 def squad_ratings(squads, ratings, tests):
-    """The ratings of every squad player, in squad order. A player with no Tests gets the average."""
+    """The ratings of every squad player, in squad order.
+
+    A player with no Tests gets the average for his role: top order for batters, keepers and allrounders,
+    lower order for bowlers.
+    """
     out = squads[["team", "player_name", "role", "squad_tier"]].copy()
     ids = squads["cricsheet_id"]
     out["tests"] = ids.map(tests).fillna(0).astype(int)
-    for column in ["bat_avg", "bat_rating", "balls", "wickets", "bowl_avg", "bowl_rating"]:
+    for column in ["position", "bat_avg", "bat_rating", "balls", "wickets", "bowl_avg", "bowl_rating"]:
         out[column] = ids.map(ratings[column])
-    out["bat_rating"] = out["bat_rating"].fillna(ratings.attrs["bat_mean"])
+    top, lower = ratings.attrs["bat_mean_top"], ratings.attrs["bat_mean_lower"]
+    role_mean = np.where(squads["role"] == "bowler", lower, top)
+    out["bat_rating"] = out["bat_rating"].fillna(pd.Series(role_mean, index=out.index))
     out["bowl_rating"] = out["bowl_rating"].fillna(ratings.attrs["bowl_mean"])
     out[["balls", "wickets"]] = out[["balls", "wickets"]].fillna(0).astype(int)
     return out
@@ -101,6 +127,8 @@ def main():
     print(f"Ratings from every Test before {args.as_of}, each Test weighted by how recent it is "
           f"(half-life {HALF_LIFE_YEARS:g} years).")
     print("bat_avg and bowl_avg are plain career averages; the ratings are what the model will use.")
+    print(f"Average for pulling batters in: top order {ratings.attrs['bat_mean_top']:.1f}, "
+          f"lower order {ratings.attrs['bat_mean_lower']:.1f} runs per dismissal.")
     for team in ["England", "Australia"]:
         print(f"\n{team}:")
         print(table[table["team"] == team].drop(columns="team").round(1).to_string(index=False))
