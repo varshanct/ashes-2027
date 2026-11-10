@@ -1,6 +1,6 @@
 """Turn the match table into the numbers the Bayesian model needs."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
@@ -23,8 +23,21 @@ def home_team_by_place(matches):
     return homes
 
 
-def build_model_table(matches, aliases):
-    """One row per finished Test: who played, where, when, who was at home, and the result."""
+def runs_per_wicket(innings):
+    """Runs scored per wicket lost across all innings: the exchange rate between runs and wickets."""
+    return innings["runs"].sum() / innings["wickets"].sum()
+
+
+def margin_in_wickets(matches, rpw):
+    """Every win's margin in wickets: the wickets in hand, or the runs margin divided by runs per wicket."""
+    return (matches["margin_runs"] / rpw).fillna(matches["margin_wkts"])
+
+
+def build_model_table(matches, aliases, rpw=None):
+    """One row per finished Test: who played, where, when, who was at home, and the result.
+
+    With runs per wicket given, also the size of each win: log(1 + margin in wickets), empty for draws.
+    """
     m = matches[matches["result_type"].isin(["win", "draw"])]
     m = m[~m["team1"].isin(EXCLUDED_TEAMS) & ~m["team2"].isin(EXCLUDED_TEAMS)].copy()
     home = m["city"].fillna(m["venue"]).map(home_team_by_place(m))
@@ -35,7 +48,11 @@ def build_model_table(matches, aliases):
     # Result from team1's point of view: 0 = team1 lost, 1 = draw, 2 = team1 won.
     m["result"] = np.where(m["result_type"] == "draw", 1, np.where(m["winner"] == m["team1"], 2, 0))
     columns = ["match_id", "date_start", "year", "team1", "team2", "home", "venue_key", "result"]
+    if rpw is not None:
+        m["margin"] = np.log1p(margin_in_wickets(m, rpw))
+        columns.append("margin")
     return m.sort_values(["date_start", "match_id"])[columns].reset_index(drop=True)
+
 
 @dataclass
 class ModelData:
@@ -50,6 +67,10 @@ class ModelData:
     home: np.ndarray
     decade: np.ndarray
     result: np.ndarray
+    # Wins with a recorded margin: which Tests, the size of the win, and +1 if team1 won or -1 if team2 won.
+    margin_idx: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=int))
+    margin: np.ndarray = field(default_factory=lambda: np.zeros(0))
+    margin_sign: np.ndarray = field(default_factory=lambda: np.zeros(0))
 
 
 def to_model_data(table, extra_venues=()):
@@ -59,6 +80,12 @@ def to_model_data(table, extra_venues=()):
     venues = sorted(set(table["venue_key"]) | set(extra_venues))
     team_number = {t: i for i, t in enumerate(teams)}
     venue_number = {v: i for i, v in enumerate(venues)}
+    margins = {}
+    if "margin" in table.columns:
+        won = table["margin"].notna().to_numpy() & (table["result"] != 1).to_numpy()
+        margins = {"margin_idx": np.flatnonzero(won),
+                   "margin": table["margin"].to_numpy()[won],
+                   "margin_sign": np.where(table["result"].to_numpy()[won] == 2, 1.0, -1.0)}
     return ModelData(
         teams=teams,
         years=years,
@@ -70,4 +97,5 @@ def to_model_data(table, extra_venues=()):
         home=table["home"].to_numpy(),
         decade=((table["year"] - TREND_BASE_YEAR) / 10).to_numpy(),
         result=table["result"].to_numpy(),
+        **margins,
     )

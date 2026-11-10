@@ -77,15 +77,16 @@ def run(monkeypatch, project, sampler=fake_sampler):
     backtest.main()
 
 
-def test_model_is_trained_only_on_tests_before_the_series(monkeypatch, project):
-    seen = {}
+def test_both_versions_are_trained_only_on_tests_before_the_series(monkeypatch, project):
+    seen = []
 
     def recording_sampler(data, draws, tune, chains, seed):
-        seen["tests"] = len(data.result)
+        seen.append((len(data.result), len(data.margin_idx)))
         return fake_sampler(data, draws, tune, chains, seed)
 
     run(monkeypatch, project, recording_sampler)
-    assert seen["tests"] == 1
+    # One Test before the series (England's innings win): the first fit ignores its margin, the second uses it.
+    assert seen == [(1, 0), (1, 1)]
 
 
 def test_command_saves_every_file_and_scores_each_test(monkeypatch, project):
@@ -95,11 +96,16 @@ def test_command_saves_every_file_and_scores_each_test(monkeypatch, project):
         "backtest.png", "backtest_scores.csv", "backtest_series.csv", "backtest_tests.csv"]
     tests = pd.read_csv(figures / "backtest_tests.csv")
     assert tests["result"].tolist() == ["Australia won", "Draw"]
-    np.testing.assert_allclose(tests[["p_home", "p_draw", "p_away"]].sum(axis=1), 1.0, atol=0.002)
+    for version in ["results", "margins"]:
+        chances = tests[[f"p_home_{version}", f"p_draw_{version}", f"p_away_{version}"]]
+        np.testing.assert_allclose(chances.sum(axis=1), 1.0, atol=0.002)
     np.testing.assert_allclose(tests["log_loss_thirds"], np.log(3), atol=0.001)
     scores = pd.read_csv(figures / "backtest_scores.csv")
     assert scores["series"].tolist() == ["Made-up series"] * 2 + ["Both series"] * 2
+    assert scores.columns.tolist() == ["series", "measure", "Results only", "With margins", "Past results",
+                                       "Equal thirds"]
     log_loss = scores[scores["measure"] == "log loss"]
     np.testing.assert_allclose(log_loss["Equal thirds"], np.log(3), atol=0.001)
     series = pd.read_csv(figures / "backtest_series.csv")
-    assert series["Actual"].tolist() == ["England 0-1 Australia"]
+    assert series["forecast"].tolist() == ["Made-up series, results only", "Made-up series, with margins"]
+    assert series["Actual"].tolist() == ["England 0-1 Australia"] * 2

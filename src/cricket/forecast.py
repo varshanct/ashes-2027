@@ -8,12 +8,13 @@ import pandas as pd
 
 from cricket.charts import plot_forecast, plot_strength
 from cricket.diagnostics import diagnose
-from cricket.model_data import build_model_table, to_model_data
+from cricket.model_data import build_model_table, runs_per_wicket, to_model_data
 from cricket.predict import forecast_tests, series_scorelines, series_summary, summarise_tests
 
 FORECAST_YEAR = 2027
 HOME, AWAY = "England", "Australia"
-SCALARS = ["sigma_start", "sigma_drift", "home_advantage", "draw_base", "draw_trend", "sigma_venue"]
+SCALARS = ["sigma_start", "sigma_drift", "home_advantage", "draw_base", "draw_trend", "sigma_venue",
+           "margin_base", "margin_slope", "margin_sigma"]
 
 
 def sample_posterior(data, draws, tune, chains, seed):
@@ -47,6 +48,7 @@ def main():
     parser.add_argument("--tune", type=int, default=1000)
     parser.add_argument("--chains", type=int, default=4)
     parser.add_argument("--seed", type=int, default=2027)
+    parser.add_argument("--results-only", action="store_true", help="leave out the winning margins")
     parser.add_argument("--processed", default="data/processed")
     parser.add_argument("--manual", default="data/manual")
     parser.add_argument("--figures", default="figures")
@@ -62,11 +64,18 @@ def main():
     aliases = pd.read_csv(manual / "venue_aliases.csv")
     fixtures = pd.read_csv(manual / "fixtures_2027.csv")
     mine = pd.read_csv(manual / "my_forecast.csv")
+    innings = pd.read_csv(processed / "innings.csv", dtype={"match_id": str})
 
-    table = build_model_table(matches, aliases)
+    rpw = None if args.results_only else runs_per_wicket(innings)
+    table = build_model_table(matches, aliases, rpw=rpw)
     data = to_model_data(table, extra_venues=fixtures["venue"])
     print(f"Tests in the model: {len(table):,}   teams: {len(data.teams)}   "
           f"years: {data.years[0]}-{data.years[-1]}   venues: {len(data.venues)}")
+    if rpw is None:
+        print("Winning margins: left out")
+    else:
+        print(f"Winning margins: {len(data.margin_idx):,} wins, at {rpw:.1f} runs per wicket "
+              f"(a 10-wicket win counts like a {10 * rpw:.0f}-run win)")
 
     samples, divergences = sample_posterior(data, args.draws, args.tune, args.chains, args.seed)
 
@@ -79,7 +88,7 @@ def main():
     post = flatten(samples, data)
     np.savez_compressed(outputs / "posterior_draws.npz", **{k: post[k] for k in samples})
 
-    params = pd.DataFrame({name: describe(post[name]) for name in SCALARS}).T
+    params = pd.DataFrame({name: describe(post[name]) for name in SCALARS if name in post}).T
     print("\nModel parameters (mean and 90% interval):")
     print(params.round(3).to_string())
 
