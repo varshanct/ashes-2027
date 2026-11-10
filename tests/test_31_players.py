@@ -67,6 +67,7 @@ def test_command_rates_every_squad_player(raw_dir, tmp_path, monkeypatch, capsys
     pd.DataFrame({"team": ["England", "Australia"], "player_name": ["E Bat", "New Player"],
                   "cricsheet_id": ["eeee0001", "zzzz0001"], "role": ["batter", "batter"],
                   "squad_tier": ["core", "fringe"]}).to_csv(manual / "squads_2027.csv", index=False)
+    pd.DataFrame(columns=players.FC_COLUMNS).to_csv(manual / "first_class.csv", index=False)
     monkeypatch.setattr(sys, "argv", ["players", "--processed", str(processed), "--manual", str(manual),
                                       "--figures", str(tmp_path / "figures")])
     players.main()

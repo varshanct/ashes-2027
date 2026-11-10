@@ -12,6 +12,10 @@ PRIOR_OUTS = 10           # a batter with no record counts as 10 dismissals at t
 TOP_ORDER = 7             # batting positions 1 to 7 are the top order; 8 to 11 the lower order
 PRIOR_WICKETS = 10        # a bowler with no record counts as 10 wickets at the average
 NOT_BOWLERS_WICKETS = {"run out", "retired out", "obstructing the field", "timed out", "handled the ball"}
+FEW_TESTS = 10            # players with fewer Tests than this start from their first-class record instead
+FC_BAT_SHARE = 0.85       # Test batting averages rarely beat first-class ones, so use 85% of it
+FC_COLUMNS = ["cricsheet_id", "player_name", "fc_matches", "fc_bat_avg", "fc_wickets", "fc_bowl_avg",
+              "stats_as_of", "source_url", "last_updated"]
 
 
 def recency_weights(dates, as_of, half_life=HALF_LIFE_YEARS):
@@ -107,6 +111,57 @@ def squad_ratings(squads, ratings, tests):
     return out
 
 
+def check_first_class(first_class, squads):
+    """Problems with the first-class file. An empty list means it is complete and consistent."""
+    f = "first_class.csv"
+    missing = [c for c in FC_COLUMNS if c not in first_class.columns]
+    if missing:
+        return [f"{f}: missing columns {missing}"]
+    problems = []
+    known = set(squads["cricsheet_id"])
+    for _, row in first_class.iterrows():
+        name = row["player_name"]
+        if row["cricsheet_id"] not in known:
+            problems.append(f"{f}: {name} ({row['cricsheet_id']}) is not in squads_2027.csv")
+        for column in ["fc_matches", "fc_bat_avg"]:
+            value = pd.to_numeric(row[column], errors="coerce")
+            if pd.isna(value) or value <= 0:
+                problems.append(f"{f}: {name} needs a positive {column}")
+        wickets = pd.to_numeric(row["fc_wickets"], errors="coerce")
+        bowl_avg = pd.to_numeric(row["fc_bowl_avg"], errors="coerce")
+        if pd.notna(bowl_avg) and (pd.isna(wickets) or wickets <= 0 or bowl_avg <= 0):
+            problems.append(f"{f}: {name} has a bowling average but no wickets, or a bowling average of 0")
+    for pid in first_class.loc[first_class["cricsheet_id"].duplicated(), "cricsheet_id"]:
+        problems.append(f"{f}: {pid} is listed more than once")
+    return problems
+
+
+def with_first_class(table, ratings, squads, first_class):
+    """Re-rate players with fewer than FEW_TESTS Tests, starting from their first-class record.
+
+    Batting starts from FC_BAT_SHARE of the first-class average, bowling from the first-class average. The
+    player's own Test record is then added on top, exactly as for everyone else. The Test-only ratings are
+    kept alongside, so the forecast can be shown both ways.
+    """
+    out = table.copy()
+    out["bat_rating_tests_only"] = out["bat_rating"]
+    out["bowl_rating_tests_only"] = out["bowl_rating"]
+    fc = first_class.set_index("cricsheet_id")
+    ids = squads["cricsheet_id"]
+    record = ratings.reindex(ids)[["w_runs", "w_outs", "w_conceded", "w_wickets"]].fillna(0)
+    record = record.set_axis(out.index)
+    bat_prior = FC_BAT_SHARE * pd.to_numeric(ids.map(fc["fc_bat_avg"]), errors="coerce")
+    bowl_prior = pd.to_numeric(ids.map(fc["fc_bowl_avg"]), errors="coerce")
+    few = out["tests"] < FEW_TESTS
+    use_bat, use_bowl = few & bat_prior.notna(), few & bowl_prior.notna()
+    new_bat = (record["w_runs"] + PRIOR_OUTS * bat_prior) / (record["w_outs"] + PRIOR_OUTS)
+    new_bowl = (record["w_conceded"] + PRIOR_WICKETS * bowl_prior) / (record["w_wickets"] + PRIOR_WICKETS)
+    out.loc[use_bat, "bat_rating"] = new_bat[use_bat]
+    out.loc[use_bowl, "bowl_rating"] = new_bowl[use_bowl]
+    out["first_class_used"] = use_bat | use_bowl
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser(description="Rate every squad player from ball-by-ball Test data.")
     parser.add_argument("--as-of", default="2026-11-10")
@@ -114,24 +169,40 @@ def main():
     parser.add_argument("--manual", default="data/manual")
     parser.add_argument("--figures", default="figures")
     args = parser.parse_args()
-    processed = Path(args.processed)
+    processed, manual = Path(args.processed), Path(args.manual)
     pd.set_option("display.width", 200)
 
     matches = pd.read_csv(processed / "matches.csv", dtype={"match_id": str})
     deliveries = pd.read_csv(processed / "deliveries.csv", dtype={"match_id": str}, low_memory=False)
     appearances = pd.read_csv(processed / "appearances.csv", dtype={"match_id": str})
-    squads = pd.read_csv(Path(args.manual) / "squads_2027.csv", dtype={"cricsheet_id": str})
+    squads = pd.read_csv(manual / "squads_2027.csv", dtype={"cricsheet_id": str})
+    first_class = pd.read_csv(manual / "first_class.csv", dtype={"cricsheet_id": str})
+    problems = check_first_class(first_class, squads)
+    if problems:
+        print(f"{len(problems)} thing(s) to fix in first_class.csv:")
+        for number, problem in enumerate(problems, start=1):
+            print(f"  {number}. {problem}")
+        raise SystemExit(1)
 
     ratings = player_ratings(deliveries, appearances, matches, args.as_of)
     table = squad_ratings(squads, ratings, count_tests(appearances, matches, args.as_of))
+    table = with_first_class(table, ratings, squads, first_class)
     print(f"Ratings from every Test before {args.as_of}, each Test weighted by how recent it is "
           f"(half-life {HALF_LIFE_YEARS:g} years).")
     print("bat_avg and bowl_avg are plain career averages; the ratings are what the model will use.")
     print(f"Average for pulling batters in: top order {ratings.attrs['bat_mean_top']:.1f}, "
           f"lower order {ratings.attrs['bat_mean_lower']:.1f} runs per dismissal.")
+    shown = ["player_name", "role", "squad_tier", "tests", "position", "bat_avg", "bat_rating", "balls",
+             "wickets", "bowl_avg", "bowl_rating"]
     for team in ["England", "Australia"]:
         print(f"\n{team}:")
-        print(table[table["team"] == team].drop(columns="team").round(1).to_string(index=False))
+        print(table.loc[table["team"] == team, shown].round(1).to_string(index=False))
+
+    changed = table[table["first_class_used"]]
+    print(f"\nRe-rated from first-class records (fewer than {FEW_TESTS} Tests; batting at "
+          f"{FC_BAT_SHARE:.0%} of the first-class average):")
+    print(changed[["team", "player_name", "tests", "bat_rating_tests_only", "bat_rating",
+                   "bowl_rating_tests_only", "bowl_rating"]].round(1).to_string(index=False))
 
     Path(args.figures).mkdir(exist_ok=True)
     path = Path(args.figures) / "player_ratings_2027_squads.csv"
