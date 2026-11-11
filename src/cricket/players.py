@@ -14,6 +14,7 @@ PRIOR_WICKETS = 10        # a bowler with no record counts as 10 wickets at the 
 NOT_BOWLERS_WICKETS = {"run out", "retired out", "obstructing the field", "timed out", "handled the ball"}
 FEW_TESTS = 10            # players with fewer Tests than this start from their first-class record instead
 FC_BAT_SHARE = 0.85       # Test batting averages rarely beat first-class ones, so use 85% of it
+FC_OUTS_PER_MATCH = 1.5   # rough number of times a batter is out in a first-class match
 FC_COLUMNS = ["cricsheet_id", "player_name", "fc_matches", "fc_bat_avg", "fc_wickets", "fc_bowl_avg",
               "stats_as_of", "source_url", "last_updated"]
 
@@ -139,9 +140,10 @@ def check_first_class(first_class, squads):
 def with_first_class(table, ratings, squads, first_class):
     """Re-rate players with fewer than FEW_TESTS Tests, starting from their first-class record.
 
-    Batting starts from FC_BAT_SHARE of the first-class average, bowling from the first-class average. The
-    player's own Test record is then added on top, exactly as for everyone else. The Test-only ratings are
-    kept alongside, so the forecast can be shown both ways.
+    Each first-class record is first pulled towards the average for the player's role, in proportion to its
+    size, so 18 wickets count for far less than 370. Batting uses FC_BAT_SHARE of the first-class average,
+    with FC_OUTS_PER_MATCH dismissals per match. The player's own Test record is then added on top, exactly
+    as for everyone else. The Test-only ratings are kept alongside, so the forecast can be shown both ways.
     """
     out = table.copy()
     out["bat_rating_tests_only"] = out["bat_rating"]
@@ -150,8 +152,25 @@ def with_first_class(table, ratings, squads, first_class):
     ids = squads["cricsheet_id"]
     record = ratings.reindex(ids)[["w_runs", "w_outs", "w_conceded", "w_wickets"]].fillna(0)
     record = record.set_axis(out.index)
-    bat_prior = FC_BAT_SHARE * pd.to_numeric(ids.map(fc["fc_bat_avg"]), errors="coerce")
-    bowl_prior = pd.to_numeric(ids.map(fc["fc_bowl_avg"]), errors="coerce")
+
+    def number(column):
+        return pd.to_numeric(ids.map(fc[column]), errors="coerce")
+
+    # The average each player is pulled towards anyway: top or lower order (from his Test batting position,
+    # or his squad role if he has none) for batting, and the all-bowler average for bowling.
+    top, lower = ratings.attrs["bat_mean_top"], ratings.attrs["bat_mean_lower"]
+    position = out["position"]
+    is_top = np.where(position.notna(), position <= TOP_ORDER, squads["role"] != "bowler")
+    bat_role = pd.Series(np.where(is_top, top, lower), index=out.index)
+    bowl_role = ratings.attrs["bowl_mean"]
+
+    # First-class records, each pulled towards the role average in proportion to its size.
+    fc_outs = FC_OUTS_PER_MATCH * number("fc_matches")
+    fc_bat = FC_BAT_SHARE * number("fc_bat_avg")
+    bat_prior = (fc_bat * fc_outs + PRIOR_OUTS * bat_role) / (fc_outs + PRIOR_OUTS)
+    fc_wkts = number("fc_wickets")
+    bowl_prior = (number("fc_bowl_avg") * fc_wkts + PRIOR_WICKETS * bowl_role) / (fc_wkts + PRIOR_WICKETS)
+
     few = out["tests"] < FEW_TESTS
     use_bat, use_bowl = few & bat_prior.notna(), few & bowl_prior.notna()
     new_bat = (record["w_runs"] + PRIOR_OUTS * bat_prior) / (record["w_outs"] + PRIOR_OUTS)
