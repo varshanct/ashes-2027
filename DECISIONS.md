@@ -525,3 +525,15 @@ Across 875 Tests, sides with a much stronger batting XI won 58% and lost 20%, ag
 much weaker one. For bowling the spread is wider: 66% won and 19% lost, against 29% and 46%. Strong teams usually
 pick strong XIs, so this does not yet show that XI strength adds anything beyond team strength. The yearly back-test
 will decide that.
+
+## 2026-11-11: XI strength in the model
+
+- Added two numbers for the model to learn: how much a better batting XI is worth and how much a better bowling XI is worth, per 10 runs of average, on top of team strength.
+- Each XI is rated from its players' records before 1 January of that year, so the back-test only uses information available at the time.
+- Tests before 2004 have no XI ratings and count as two even XIs.
+- Ran the yearly back-test with three versions on all 472 Tests from 2015 to 2026.
+- Results only: log loss 0.883, Brier 0.519. With XI ratings: 0.885 and 0.521. With margins: 0.890 and 0.524.
+- The XI version was better in 6 years, worse in 4 and level in 2. The difference is too small to matter.
+- Most likely reason: team strength is learned from results, and results already reflect who played. The XI rating repeats what the model already knows.
+- Decision: the main 2027 forecast stays results-only. The XI version forecasts just as well, so I use it for squad questions, such as what happens if a key bowler is unavailable.
+- Sampler: 6 divergences across 36 fits and a worst R-hat of 1.027 in one fit. No other fit went above 1.011.
