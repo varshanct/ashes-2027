@@ -1,21 +1,21 @@
 test_no,venue,p_home,p_draw,p_away,forecast
-1,Trent Bridge,0.504,0.098,0.398,"Expected XIs, everyone fit"
-2,Lord's,0.476,0.152,0.371,"Expected XIs, everyone fit"
-3,Edgbaston,0.498,0.11,0.392,"Expected XIs, everyone fit"
-4,Utilita Bowl,0.475,0.155,0.37,"Expected XIs, everyone fit"
-5,Kia Oval,0.505,0.096,0.399,"Expected XIs, everyone fit"
-1,Trent Bridge,0.487,0.098,0.414,Availability simulated
-2,Lord's,0.456,0.153,0.391,Availability simulated
-3,Edgbaston,0.473,0.111,0.416,Availability simulated
-4,Utilita Bowl,0.454,0.156,0.39,Availability simulated
-5,Kia Oval,0.48,0.097,0.423,Availability simulated
-1,Trent Bridge,0.477,0.099,0.425,"Availability simulated, with first-class records"
-2,Lord's,0.447,0.154,0.4,"Availability simulated, with first-class records"
-3,Edgbaston,0.466,0.111,0.423,"Availability simulated, with first-class records"
-4,Utilita Bowl,0.445,0.157,0.398,"Availability simulated, with first-class records"
-5,Kia Oval,0.473,0.097,0.43,"Availability simulated, with first-class records"
-1,Trent Bridge,0.491,0.098,0.411,"Availability simulated, without Pat Cummins and Josh Hazlewood"
-2,Lord's,0.46,0.153,0.387,"Availability simulated, without Pat Cummins and Josh Hazlewood"
-3,Edgbaston,0.479,0.11,0.41,"Availability simulated, without Pat Cummins and Josh Hazlewood"
-4,Utilita Bowl,0.458,0.156,0.386,"Availability simulated, without Pat Cummins and Josh Hazlewood"
-5,Kia Oval,0.486,0.097,0.418,"Availability simulated, without Pat Cummins and Josh Hazlewood"
+1,Trent Bridge,0.508,0.098,0.394,"Expected XIs, everyone fit"
+2,Lord's,0.48,0.152,0.368,"Expected XIs, everyone fit"
+3,Edgbaston,0.502,0.11,0.388,"Expected XIs, everyone fit"
+4,Utilita Bowl,0.478,0.156,0.366,"Expected XIs, everyone fit"
+5,Kia Oval,0.509,0.096,0.395,"Expected XIs, everyone fit"
+1,Trent Bridge,0.491,0.098,0.411,Availability simulated
+2,Lord's,0.459,0.153,0.387,Availability simulated
+3,Edgbaston,0.476,0.111,0.413,Availability simulated
+4,Utilita Bowl,0.457,0.157,0.386,Availability simulated
+5,Kia Oval,0.483,0.096,0.421,Availability simulated
+1,Trent Bridge,0.48,0.098,0.421,"Availability simulated, with first-class records"
+2,Lord's,0.45,0.154,0.397,"Availability simulated, with first-class records"
+3,Edgbaston,0.469,0.111,0.42,"Availability simulated, with first-class records"
+4,Utilita Bowl,0.448,0.157,0.395,"Availability simulated, with first-class records"
+5,Kia Oval,0.476,0.097,0.427,"Availability simulated, with first-class records"
+1,Trent Bridge,0.495,0.098,0.407,"Availability simulated, without Pat Cummins and Josh Hazlewood"
+2,Lord's,0.463,0.153,0.384,"Availability simulated, without Pat Cummins and Josh Hazlewood"
+3,Edgbaston,0.482,0.111,0.407,"Availability simulated, without Pat Cummins and Josh Hazlewood"
+4,Utilita Bowl,0.461,0.156,0.382,"Availability simulated, without Pat Cummins and Josh Hazlewood"
+5,Kia Oval,0.489,0.096,0.415,"Availability simulated, without Pat Cummins and Josh Hazlewood"

@@ -553,3 +553,13 @@ will decide that.
 - England's fitness risk costs them about 4 points, mostly through Archer, who plays about 3 of 5 Tests.
 - Australia's depth protects them: Boland (21.0) and Neser (24.0) are rated as highly as Cummins (24.3) and Hazlewood (22.3).
 - Sampler: 9 divergences across 24 back-test fits, worst R-hat 1.012. The squad forecast fit had 0 divergences and a worst R-hat of 1.006.
+
+## 2026-11-11: Tidy-up after a full review
+
+- The 2019 and 2023 Ashes back-test chart now shows the results-only model, the version the forecast uses. Before, it showed the model with margins.
+- The legend on the forecast charts now lines up with the right-hand end of the bars. On the squad chart the long scenario names had pushed it off the page.
+- Removed an unused import and a misplaced comment. The code now passes ruff, the linter in the project's dev tools.
+- Moved the project rules into CONVENTIONS.md, next to this diary.
+- Re-ran everything. The headline forecast and the 2019 and 2023 back-test came out identical.
+- The squad forecast moved by up to one point, for example 49% to 50% for England with availability simulated. With about 1,000 effective draws, a series chance has a sampling error of about half a point, so this is noise, not a change. None of the findings change.
+- The README now uses the latest squad numbers and says they carry about a point of sampling error.

@@ -25,7 +25,7 @@ through to every series result.
 England are slight favourites at home because the model's home advantage (0.63) is a little larger than the gap
 between the teams (Australia 1.33, England 0.78 on the model's scale).
 
-Building the forecast from the two squads, with each player's chance of being fit for each Test, gives England 49%,
+Building the forecast from the two squads, with each player's chance of being fit for each Test, gives England 50%,
 a drawn series 13% and Australia 37%. See "Players, squads and availability".
 
 ## The question and the approach
@@ -141,7 +141,7 @@ forecast uses the results-only model: the simpler of two versions that perform t
   (slope 0.17, 0.14 to 0.21), and England's peak around 2010–11 and Australia's dip around 2010–13 both show. The
   back-test shows this extra movement does not predict the next year's Tests any better.
 - **The bowling attack matters beyond team strength; the batting line-up does not.** Each 10 runs of bowling average
-  is worth 0.39 on the model's scale (0.03 to 0.76). Each 10 runs of batting average is worth 0.06 (−0.36 to 0.49).
+  is worth 0.40 on the model's scale (0.05 to 0.75). Each 10 runs of batting average is worth 0.06 (−0.37 to 0.50).
 
 ![Team strength over time](figures/team_strength.png)
 
@@ -177,15 +177,17 @@ first available player in the cover plan for his role.
 
 | Squad forecast | England win | Drawn series | Australia win | Australia retain the urn |
 | --- | --- | --- | --- | --- |
-| Expected XIs, everyone fit | 53% | 13% | 34% | 47% |
-| Availability simulated | 49% | 13% | 37% | 51% |
-| Availability simulated, with first-class records | 48% | 13% | 39% | 52% |
-| Availability simulated, without Cummins and Hazlewood | 50% | 13% | 37% | 50% |
+| Expected XIs, everyone fit | 54% | 13% | 33% | 46% |
+| Availability simulated | 50% | 13% | 37% | 50% |
+| Availability simulated, with first-class records | 48% | 13% | 38% | 52% |
+| Availability simulated, without Cummins and Hazlewood | 51% | 13% | 36% | 49% |
+
+Running it again moves these by up to about one point: the sampling error of 4,000 draws.
 
 - **England's fitness risk costs them about 4 points.** Mostly through Archer, who plays about three of the five Tests.
 - **Australia's depth protects them.** Boland and Neser are rated about as highly as Cummins and Hazlewood, so losing
   both for the whole series costs Australia about one point.
-- **First-class records cost England a point.** They rate Bethell's bowling well below his short Test record suggests.
+- **First-class records cost England nearly two points.** They rate Bethell's bowling well below his short Test record suggests.
 
 ![2027 Ashes series forecast from the two squads](figures/squad_forecast.png)
 
