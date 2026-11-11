@@ -38,17 +38,22 @@ def venue_draws(post, venue, rng):
     return rng.standard_normal(len(post["sigma_venue"])) * post["sigma_venue"]
 
 
-def forecast_tests(post, fixtures, home_team, away_team, year, trend_base_year=2019, seed=2027):
-    """For each fixture, the chance of a home win, a draw and an away win, for every posterior draw."""
+def forecast_tests(post, fixtures, home_team, away_team, year, trend_base_year=2019, seed=2027, edge=None):
+    """For each fixture, the chance of a home win, a draw and an away win, for every posterior draw.
+
+    edge: optional extra edge for the home side, one value per posterior draw and Test (draws, tests),
+    such as how much stronger the home XI is in that Test.
+    """
     rng = np.random.default_rng(seed)
     strength = strength_in_year(post, year, rng)
     h, a = post["teams"].index(home_team), post["teams"].index(away_team)
     eta = strength[:, h] - strength[:, a] + post["home_advantage"]
     decade = (year - trend_base_year) / 10
     per_test = []
-    for venue in fixtures["venue"]:
+    for i, venue in enumerate(fixtures["venue"]):
         log_width = post["draw_base"] + venue_draws(post, venue, rng) + post["draw_trend"] * decade
-        lose, draw, win = np.moveaxis(result_probs(eta, np.exp(log_width)), -1, 0)
+        test_eta = eta if edge is None else eta + edge[:, i]
+        lose, draw, win = np.moveaxis(result_probs(test_eta, np.exp(log_width)), -1, 0)
         per_test.append(np.stack([win, draw, lose], axis=-1))   # [home win, draw, away win]
     return np.stack(per_test, axis=1)                             # shape: (draws, tests, 3)
 
