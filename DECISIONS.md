@@ -512,3 +512,16 @@ Robinson rates as England's best bowler (18.0), which matches his Test average b
 series. Boland, Hazlewood, Starc and Cummins are Australia's best bowlers, and Root and Brook England's best
 batters. Two things the ratings do not yet account for, both testable on the yearly back-test later: the strength
 of the opposition, and the conditions (a player's record in England with the Dukes ball).
+
+## 2026-11-11: Rating each XI
+Each side's XI in every Test from 2004 is rated from its players' ratings as of 1 January that year, so a Test is
+rated only from earlier years. Batting is the average batting rating of the XI. Bowling is the average bowling
+rating of the five players who have bowled most, so part-timers do not count. A player with no earlier Test gets
+the average for where he batted in that match, and the average bowling rating. 2004 is the first year because
+earlier years have too few previous Tests to rate players from.
+
+## 2026-11-11: Stronger XIs win more often
+Across 875 Tests, sides with a much stronger batting XI won 58% and lost 20%, against 36% and 46% for sides with a
+much weaker one. For bowling the spread is wider: 66% won and 19% lost, against 29% and 46%. Strong teams usually
+pick strong XIs, so this does not yet show that XI strength adds anything beyond team strength. The yearly back-test
+will decide that.
