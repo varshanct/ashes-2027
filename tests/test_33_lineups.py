@@ -59,6 +59,19 @@ def test_rate_xi_uses_the_five_main_bowlers_and_averages_for_newcomers():
     assert lower["bat_xi"] == pytest.approx((40 + 30 + 10 + 12 + 8 + 9 + 11 + 15) / 8)
 
 
+def test_rate_xi_uses_who_bowled_in_this_match():
+    ratings = pd.DataFrame({"bat_rating": [40.0, 30.0, 10.0, 12.0, 8.0, 9.0, 11.0],
+                            "bowl_rating": [50.0, 45.0, 25.0, 27.0, 29.0, 31.0, 33.0],
+                            "balls": [6000, 100, 5000, 4000, 3000, 2000, 1000]},
+                           index=["p1", "p2", "p3", "p4", "p5", "p6", "p7"])
+    ratings.attrs.update(bat_mean_top=35.0, bat_mean_lower=15.0, bowl_mean=30.0)
+    ids = ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "new"]
+    # p1 has bowled most in his career but not in this match; the debutant opened the bowling.
+    balls = pd.Series({"new": 200, "p3": 180, "p4": 150, "p5": 120, "p6": 90, "p7": 12})
+    xi = rate_xi(ids, ratings, pd.Series({"new": 9}), balls)
+    assert xi["bowl_xi"] == pytest.approx((30 + 25 + 27 + 29 + 31) / 5)       # the debutant counts at 30
+
+
 def test_xi_ratings_use_only_earlier_years():
     deliveries, appearances, matches = made_up_tests()
     xi = xi_ratings(deliveries, appearances, matches, first_year=2023, progress=lambda _: None)

@@ -19,6 +19,7 @@ from cricket.predict import forecast_tests, summarise_tests
 
 SAME_FITNESS = 0.5    # chance a player's fitness for a Test follows his fitness for the whole series
 BATTING_SLOTS = 6     # an allrounder batting in the top six is replaced by a batter; lower down, by a bowler
+ATTACK_ORDER = {"bowler": 2, "allrounder": 1}   # who makes up the attack first: bowlers, then allrounders
 
 
 def need_for(player):
@@ -86,18 +87,19 @@ def replacement(player, team_squad, cover, missing, xi):
 
 def role_averages(attrs):
     """Ratings for a replacement nobody has picked: the average for his role."""
-    def player(bat):
-        return pd.Series({"bat_rating": bat, "bowl_rating": attrs["bowl_mean"], "balls": 0})
-    top, lower = player(attrs["bat_mean_top"]), player(attrs["bat_mean_lower"])
+    def player(bat, attack):
+        return pd.Series({"bat_rating": bat, "bowl_rating": attrs["bowl_mean"], "balls": 0, "attack": attack})
+    top, lower = player(attrs["bat_mean_top"], 0), player(attrs["bat_mean_lower"], ATTACK_ORDER["bowler"])
     return {"replacement batter": top, "replacement keeper": top,
             "replacement pace": lower, "replacement spin": lower}
 
 
 def rate_xi(xi, rated, averages):
-    """Batting and bowling rating of one XI, the same way as for past Tests: the batting rating of all
-    eleven, and the bowling rating of the five who have bowled most balls in Tests."""
+    """Batting and bowling rating of one XI: the batting rating of all eleven, and the bowling rating of the
+    five main bowlers. The attack is picked by role, as a captain would: specialist bowlers first, then
+    allrounders, then anyone else, with Test balls bowled breaking ties."""
     rows = pd.DataFrame([rated.loc[pid] if pid in rated.index else averages[pid] for pid in xi])
-    bowlers = rows.sort_values("balls", ascending=False, kind="stable").head(MAIN_BOWLERS)
+    bowlers = rows.sort_values(["attack", "balls"], ascending=False, kind="stable").head(MAIN_BOWLERS)
     return rows["bat_rating"].mean(), bowlers["bowl_rating"].mean()
 
 
@@ -135,11 +137,12 @@ def xi_edge(post, xis):
 
 
 def rated_players(table, squads, column_suffix=""):
-    """Squad ratings indexed by player ID: batting, bowling and balls bowled."""
-    rated = pd.DataFrame({"bat_rating": table[f"bat_rating{column_suffix}"].to_numpy(),
-                          "bowl_rating": table[f"bowl_rating{column_suffix}"].to_numpy(),
-                          "balls": table["balls"].to_numpy()}, index=squads["cricsheet_id"].to_numpy())
-    return rated
+    """Squad ratings indexed by player ID: batting, bowling, balls bowled and place in the attack."""
+    return pd.DataFrame({"bat_rating": table[f"bat_rating{column_suffix}"].to_numpy(),
+                         "bowl_rating": table[f"bowl_rating{column_suffix}"].to_numpy(),
+                         "balls": table["balls"].to_numpy(),
+                         "attack": squads["role"].map(ATTACK_ORDER).fillna(0).to_numpy()},
+                        index=squads["cricsheet_id"].to_numpy())
 
 
 def main():

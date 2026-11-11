@@ -68,15 +68,19 @@ def test_pick_xi_falls_back_when_the_cover_plan_runs_out():
     assert "replacement pace" in pick_xi(team, COVER, nobody)
 
 
-def test_rate_xi_uses_all_eleven_for_batting_and_five_main_bowlers():
+def test_rate_xi_picks_the_attack_by_role():
+    # x1 is a part-timer with the most Test balls; x6 is a specialist bowler with none.
     rated = pd.DataFrame({"bat_rating": [40.0, 30.0, 10.0, 12.0, 8.0, 9.0],
-                          "bowl_rating": [50.0, 25.0, 27.0, 29.0, 31.0, 33.0],
-                          "balls": [0, 5000, 4000, 3000, 2000, 1000]},
+                          "bowl_rating": [44.0, 25.0, 27.0, 29.0, 31.0, 21.0],
+                          "balls": [6000, 5000, 4000, 3000, 2000, 0],
+                          "attack": [0, 2, 2, 2, 1, 2]},
                          index=["x1", "x2", "x3", "x4", "x5", "x6"])
     averages = role_averages({"bat_mean_top": 35.0, "bat_mean_lower": 15.0, "bowl_mean": 30.0})
     bat, bowl = rate_xi(["x1", "x2", "x3", "x4", "x5", "x6", "replacement batter"], rated, averages)
     assert bat == pytest.approx((40 + 30 + 10 + 12 + 8 + 9 + 35) / 7)
-    assert bowl == pytest.approx((25 + 27 + 29 + 31 + 33) / 5)
+    assert bowl == pytest.approx((25 + 27 + 29 + 21 + 31) / 5)              # x6 counts, x1 does not
+    _, with_replacement = rate_xi(["x1", "x2", "x3", "x4", "replacement pace"], rated, averages)
+    assert with_replacement == pytest.approx((25 + 27 + 29 + 30 + 44) / 5)  # five needed, so x1 makes it
 
 
 def test_availability_matches_the_chances_and_carries_over_between_tests():
@@ -98,7 +102,8 @@ def test_simulate_xis_with_everyone_fit_picks_the_expected_xi_every_time():
     australia = squad("Australia").assign(cricsheet_id=lambda d: "a" + d["cricsheet_id"])
     both = pd.concat([squad("England"), australia], ignore_index=True)
     cover = pd.concat([COVER, COVER.assign(team="Australia", cricsheet_id="a" + COVER["cricsheet_id"])])
-    rated = pd.DataFrame({"bat_rating": 30.0, "bowl_rating": 30.0, "balls": 100}, index=both["cricsheet_id"])
+    rated = pd.DataFrame({"bat_rating": 30.0, "bowl_rating": 30.0, "balls": 100, "attack": 0},
+                         index=both["cricsheet_id"])
     rated.loc["b1", "bat_rating"] = 52.0                    # England's opener is 22 runs better
     averages = role_averages({"bat_mean_top": 35.0, "bat_mean_lower": 15.0, "bowl_mean": 30.0})
     available = np.ones((4, 5, len(both)), dtype=bool)

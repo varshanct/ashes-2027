@@ -9,7 +9,7 @@ import pandas as pd
 from cricket.model_data import build_model_table
 from cricket.players import TOP_ORDER, player_ratings
 
-MAIN_BOWLERS = 5          # a side's bowling is rated on the five players who have bowled most
+MAIN_BOWLERS = 5          # a side's bowling is rated on its five main bowlers
 FIRST_YEAR = 2004         # earlier years have too few previous Tests to rate players from
 
 
@@ -20,11 +20,13 @@ def positions_in_match(deliveries):
     return first.groupby(["match_id", "batter_id"])["position"].min()
 
 
-def rate_xi(player_ids, ratings, match_positions):
+def rate_xi(player_ids, ratings, match_positions, match_balls=None):
     """Batting and bowling rating of one XI.
 
     bat_xi: the average batting rating of the XI (higher is better).
-    bowl_xi: the average bowling rating of the five who have bowled most (lower is better).
+    bowl_xi: the average bowling rating of the side's five main bowlers (lower is better): the five who
+    bowled most balls in this match, so a debutant who took the new ball counts. Without match_balls, or
+    to break ties, the five who have bowled most balls in earlier Tests.
     A player with no earlier Tests gets the average: for batting, the top or lower order depending on where he
     batted in this match, and for bowling, the average bowler.
     """
@@ -33,9 +35,11 @@ def rate_xi(player_ids, ratings, match_positions):
     position = match_positions.reindex(player_ids).to_numpy()
     debut_bat = np.where(position <= TOP_ORDER, top, lower)          # did not bat counts as lower order
     bat = rated["bat_rating"].fillna(pd.Series(debut_bat, index=rated.index))
-    balls = rated["balls"].fillna(0)
     bowl = rated["bowl_rating"].fillna(ratings.attrs["bowl_mean"])
-    main = balls.sort_values(ascending=False, kind="stable").index[:MAIN_BOWLERS]
+    in_match = pd.Series(0, index=rated.index) if match_balls is None else match_balls.reindex(player_ids)
+    order = pd.DataFrame({"match": in_match.fillna(0).to_numpy(),
+                          "career": rated["balls"].fillna(0).to_numpy()}, index=rated.index)
+    main = order.sort_values(["match", "career"], ascending=False, kind="stable").index[:MAIN_BOWLERS]
     return {"bat_xi": bat.mean(), "bowl_xi": bowl.loc[main].mean(),
             "new_players": int(rated["bat_rating"].isna().sum())}
 
@@ -45,14 +49,17 @@ def xi_ratings(deliveries, appearances, matches, first_year=FIRST_YEAR, last_yea
     years = pd.to_datetime(matches.set_index("match_id")["date_start"]).dt.year
     last_year = last_year or int(years.max())
     match_positions = positions_in_match(deliveries)
+    legal = deliveries[deliveries["is_legal"].astype(bool)]
+    balls_in_match = legal.groupby(["match_id", "bowler_id"]).size()
     rows = []
     for year in range(first_year, last_year + 1):
         ratings = player_ratings(deliveries, appearances, matches, f"{year}-01-01")
         in_year = appearances[appearances["match_id"].map(years) == year]
         for (match_id, team), xi in in_year.groupby(["match_id", "team"], sort=False):
             positions = match_positions.loc[match_id] if match_id in match_positions.index else pd.Series()
+            balls = balls_in_match.loc[match_id] if match_id in balls_in_match.index else pd.Series()
             rows.append({"match_id": match_id, "team": team, "players": len(xi),
-                         **rate_xi(xi["player_id"].to_numpy(), ratings, positions)})
+                         **rate_xi(xi["player_id"].to_numpy(), ratings, positions, balls)})
         progress(f"  {year}: rated {in_year['match_id'].nunique()} Tests")
     return pd.DataFrame(rows)
 
