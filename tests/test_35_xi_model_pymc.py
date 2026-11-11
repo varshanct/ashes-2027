@@ -1,9 +1,9 @@
 from dataclasses import replace
 
 import numpy as np
+from test_24_bayes_model import small_data
 
 from cricket.bayes_model import XI_PARAMETERS, build_model, fit
-from test_24_bayes_model import small_data
 
 
 def with_xi(data, seed=2):

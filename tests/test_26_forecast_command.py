@@ -16,7 +16,7 @@ def fake_sampler(data, draws, tune, chains, seed):
     years, teams, venues = len(data.years), len(data.teams), len(data.venues)
     strength = rng.normal(0, 0.2, size=(chains, draws, years, teams))
     strength -= strength.mean(axis=3, keepdims=True)
-    scalar = lambda mean: rng.normal(mean, 0.05, size=(chains, draws))  # noqa: E731
+    scalar = lambda mean: rng.normal(mean, 0.05, size=(chains, draws))
     samples = {"strength": strength, "sigma_start": np.abs(scalar(0.5)), "sigma_drift": np.abs(scalar(0.1)),
                "home_advantage": scalar(0.3), "draw_base": scalar(-0.2), "draw_trend": scalar(-0.3),
                "sigma_venue": np.abs(scalar(0.3)), "venue_effect": rng.normal(0, 0.3, size=(chains, draws, venues))}

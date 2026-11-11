@@ -3,11 +3,11 @@ import sys
 import numpy as np
 import pandas as pd
 import pytest
+from test_26_forecast_command import fake_sampler
 
 from cricket import backtest
 from cricket.backtest import base_rates, score, series_tests
 from cricket.ingest import ingest_folder, save_tables
-from test_26_forecast_command import fake_sampler
 
 
 def table(rows):

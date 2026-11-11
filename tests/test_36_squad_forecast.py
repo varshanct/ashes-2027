@@ -3,16 +3,23 @@ import sys
 import numpy as np
 import pandas as pd
 import pytest
+from test_22_predict import FIXTURES, fake_post
+from test_26_forecast_command import GROUNDS, fake_sampler
 
 from cricket import squad_forecast
 from cricket.ingest import ingest_folder, save_tables
 from cricket.manual_data import AVAIL_COLS
 from cricket.players import FC_COLUMNS
 from cricket.predict import forecast_tests
-from cricket.squad_forecast import (availability_draws, need_for, pick_xi, rate_xi, role_averages,
-                                    simulate_xis, xi_edge)
-from test_22_predict import FIXTURES, fake_post
-from test_26_forecast_command import GROUNDS, fake_sampler
+from cricket.squad_forecast import (
+    availability_draws,
+    need_for,
+    pick_xi,
+    rate_xi,
+    role_averages,
+    simulate_xis,
+    xi_edge,
+)
 
 CORE = [("b1", "batter", "none"), ("b2", "batter", "none"), ("b3", "batter", "none"),
         ("b4", "batter", "none"), ("b5", "batter", "none"), ("ar", "allrounder", "pace"),

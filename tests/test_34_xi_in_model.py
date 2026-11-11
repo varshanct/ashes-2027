@@ -4,13 +4,13 @@ import sys
 import numpy as np
 import pandas as pd
 import pytest
+from test_26_forecast_command import fake_sampler
+from test_30_rolling_backtest import ALIASES, made_up_matches
 
 from cricket import rolling_backtest
 from cricket.model_data import XI_SCALE, add_xi, build_model_table, to_model_data
 from cricket.predict import result_probs
 from cricket.rolling_backtest import backtest_year, forecast_matches, version_table
-from test_26_forecast_command import fake_sampler
-from test_30_rolling_backtest import ALIASES, made_up_matches
 
 
 def xi_for(rows):

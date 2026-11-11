@@ -38,7 +38,8 @@ def parse_outcome(outcome):
         result["result_type"] = outcome.get("result", "unknown").replace(" ", "_")
     return result
 
-    # Ways of leaving the crease that are not dismissals.
+
+# Ways of leaving the crease that are not dismissals.
 NOT_DISMISSALS = {"retired hurt", "retired not out"}
 
 
@@ -193,4 +194,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()  
+    main()

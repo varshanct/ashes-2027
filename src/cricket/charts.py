@@ -4,7 +4,7 @@ import matplotlib
 import numpy as np
 
 matplotlib.use("Agg")  # draw straight to files; no window needed
-import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.pyplot as plt
 
 # Colours: one hue for single measures; two opposite hues and a neutral grey for win / draw / loss.
 SURFACE = "#fcfcfb"
@@ -136,7 +136,8 @@ def plot_forecast(rows, path, title, labels=("England win", "Draw", "Australia w
     _style(ax)
     ax.set_xlim(0, 100)
     ax.set_xlabel("Chance (%)", color=MUTED)
-    ax.legend(ncol=3, loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False, labelcolor=INK)
+    # Line the legend up with the right-hand end of the bars, so long labels never push it off the page.
+    ax.legend(ncol=3, loc="lower right", bbox_to_anchor=(1.0, 1.0), frameon=False, labelcolor=INK)
     fig.suptitle(title, x=0.01, ha="left", color=INK, fontsize=13)
     fig.tight_layout()
     fig.savefig(path, dpi=200, facecolor=SURFACE)

@@ -4,13 +4,12 @@ import sys
 import numpy as np
 import pandas as pd
 import pytest
+from test_26_forecast_command import fake_sampler
 
 from cricket import rolling_backtest
 from cricket.model_data import build_model_table
 from cricket.predict import result_probs
-from cricket.rolling_backtest import (backtest_year, forecast_matches, past_results_forecast,
-                                      scores_by_year)
-from test_26_forecast_command import fake_sampler
+from cricket.rolling_backtest import backtest_year, forecast_matches, past_results_forecast, scores_by_year
 
 ALIASES = pd.DataFrame({"cricsheet_venue": ["A Ground"], "ground": ["A Ground"]})
 

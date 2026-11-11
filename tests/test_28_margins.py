@@ -3,11 +3,11 @@ import sys
 import numpy as np
 import pandas as pd
 import pytest
+from test_26_forecast_command import fake_sampler, project  # noqa: F401  (project is a fixture)
 
 from cricket import forecast
 from cricket.ingest import ingest_folder
 from cricket.model_data import build_model_table, margin_in_wickets, runs_per_wicket, to_model_data
-from test_26_forecast_command import fake_sampler, project  # noqa: F401  (project is a fixture)
 
 ALIASES = pd.DataFrame({"cricsheet_venue": ["Edgbaston, Birmingham"], "ground": ["Edgbaston"]})
 

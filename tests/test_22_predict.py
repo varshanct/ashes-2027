@@ -2,8 +2,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from cricket.predict import (forecast_tests, result_probs, series_scorelines, series_summary,
-                             strength_in_year, summarise_tests)
+from cricket.predict import (
+    forecast_tests,
+    result_probs,
+    series_scorelines,
+    series_summary,
+    strength_in_year,
+    summarise_tests,
+)
 
 
 def fake_post(n=400, seed=0):

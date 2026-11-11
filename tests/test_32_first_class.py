@@ -6,8 +6,14 @@ import pytest
 
 from cricket import players
 from cricket.ingest import ingest_folder, save_tables
-from cricket.players import (FC_BAT_SHARE, FC_OUTS_PER_MATCH, PRIOR_OUTS, PRIOR_WICKETS, check_first_class,
-                             with_first_class)
+from cricket.players import (
+    FC_BAT_SHARE,
+    FC_OUTS_PER_MATCH,
+    PRIOR_OUTS,
+    PRIOR_WICKETS,
+    check_first_class,
+    with_first_class,
+)
 
 SQUADS = pd.DataFrame({"team": ["England", "England", "Australia"],
                        "player_name": ["New Bat", "Old Hand", "New Bowler"],

@@ -6,8 +6,14 @@ import pytest
 
 from cricket import players
 from cricket.ingest import ingest_folder, save_tables
-from cricket.players import (PRIOR_OUTS, PRIOR_WICKETS, batting_positions, count_tests, player_ratings,
-                             recency_weights)
+from cricket.players import (
+    PRIOR_OUTS,
+    PRIOR_WICKETS,
+    batting_positions,
+    count_tests,
+    player_ratings,
+    recency_weights,
+)
 
 NEVER = float("inf")   # a half-life so long that every Test counts the same, for hand calculations
 

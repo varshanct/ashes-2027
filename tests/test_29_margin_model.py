@@ -3,9 +3,9 @@ from dataclasses import replace
 import numpy as np
 import pymc as pm
 from scipy.stats import norm
+from test_24_bayes_model import small_data
 
 from cricket.bayes_model import MARGIN_PARAMETERS, build_model, fit
-from test_24_bayes_model import small_data
 
 
 def with_margins(data, seed=1):

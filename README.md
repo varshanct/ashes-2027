@@ -267,6 +267,7 @@ uv run python -m cricket.squad_forecast --without "Pat Cummins,Josh Hazlewood"  
 | `data/manual/` | Squads, availability, cover plan, first-class records, fixtures, venues, climate and my own forecast |
 | `figures/` | Charts and results tables |
 | `tests/` | 214 tests |
+| [`CONVENTIONS.md`](CONVENTIONS.md) | The rules the code and data follow |
 | [`DECISIONS.md`](DECISIONS.md) | Every modelling and data decision, with reasons |
 
 ## Data sources

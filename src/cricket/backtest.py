@@ -10,7 +10,7 @@ from cricket.charts import plot_forecast
 from cricket.diagnostics import diagnose
 from cricket.forecast import flatten, sample_posterior, series_row
 from cricket.model_data import build_model_table, runs_per_wicket, to_model_data
-from cricket.predict import forecast_tests, summarise_tests
+from cricket.predict import forecast_tests
 
 HOME, AWAY = "England", "Australia"
 SERIES = {"2019 Ashes": ("2019-08-01", "2019-09-16"),
@@ -128,8 +128,8 @@ def main():
     tests = pd.concat(all_rows, ignore_index=True)
     series = pd.DataFrame(all_series)
 
-    print("\nEvery Test (chances from the model with margins, then what happened):")
-    columns = ["series", "test_no", "venue", "p_home_margins", "p_draw_margins", "p_away_margins", "result"]
+    print("\nEvery Test (chances from the results-only model, then what happened):")
+    columns = ["series", "test_no", "venue", "p_home_results", "p_draw_results", "p_away_results", "result"]
     print(tests[columns].round(2).to_string(index=False))
 
     scores = score_table(tests)
@@ -144,10 +144,10 @@ def main():
     series.round(3).to_csv(figures / "backtest_series.csv", index=False)
     chart = tests.assign(label=tests["series"].str[:4] + " Test " + tests["test_no"].astype(str) + ", "
                          + tests["venue"] + " (" + tests["result"] + ")",
-                         p_home=tests["p_home_margins"], p_draw=tests["p_draw_margins"],
-                         p_away=tests["p_away_margins"])
+                         p_home=tests["p_home_results"], p_draw=tests["p_draw_results"],
+                         p_away=tests["p_away_results"])
     plot_forecast(chart, figures / "backtest.png",
-                  "Back-test: chances before each Ashes Test (model with margins), and what happened")
+                  "Back-test: chances before each Ashes Test (results-only model), and what happened")
 
     print("\nSaved:")
     for file in ["backtest_tests.csv", "backtest_scores.csv", "backtest_series.csv", "backtest.png"]:
