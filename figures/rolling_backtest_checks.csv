@@ -1,37 +1,25 @@
 year,version,max_rhat,min_ess,divergences
 2015,Results only,1.003,711.213,0
-2015,With margins,1.005,865.406,0
-2015,With XI ratings,1.002,1056.382,0
+2015,With XI ratings,1.012,422.896,1
 2016,Results only,1.002,903.449,2
-2016,With margins,1.007,466.423,0
-2016,With XI ratings,1.004,865.201,0
+2016,With XI ratings,1.008,593.194,0
 2017,Results only,1.002,930.567,2
-2017,With margins,1.008,580.075,0
-2017,With XI ratings,1.002,877.992,1
+2017,With XI ratings,1.003,802.862,0
 2018,Results only,1.002,865.313,0
-2018,With margins,1.005,777.312,0
-2018,With XI ratings,1.004,864.288,0
+2018,With XI ratings,1.003,905.047,0
 2019,Results only,1.003,1120.688,0
-2019,With margins,1.001,918.323,0
-2019,With XI ratings,1.002,1040.935,0
+2019,With XI ratings,1.012,702.873,0
 2020,Results only,1.002,1167.351,0
-2020,With margins,1.006,903.706,0
-2020,With XI ratings,1.002,1193.596,0
+2020,With XI ratings,1.007,755.225,0
 2021,Results only,1.002,1030.147,0
-2021,With margins,1.005,887.281,0
-2021,With XI ratings,1.011,788.958,0
+2021,With XI ratings,1.003,727.18,1
 2022,Results only,1.003,1059.155,0
-2022,With margins,1.002,996.929,0
-2022,With XI ratings,1.003,999.137,0
+2022,With XI ratings,1.002,1147.291,1
 2023,Results only,1.004,1051.219,1
-2023,With margins,1.005,658.531,0
-2023,With XI ratings,1.004,804.854,0
+2023,With XI ratings,1.004,825.039,0
 2024,Results only,1.002,1099.866,0
-2024,With margins,1.007,626.414,0
-2024,With XI ratings,1.002,1079.917,0
+2024,With XI ratings,1.005,839.287,1
 2025,Results only,1.006,870.298,0
-2025,With margins,1.006,752.371,0
-2025,With XI ratings,1.027,319.312,0
+2025,With XI ratings,1.003,961.32,0
 2026,Results only,1.002,1228.385,0
-2026,With margins,1.006,925.275,0
-2026,With XI ratings,1.003,809.968,0
+2026,With XI ratings,1.005,1013.981,0

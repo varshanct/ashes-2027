@@ -537,3 +537,19 @@ will decide that.
 - Most likely reason: team strength is learned from results, and results already reflect who played. The XI rating repeats what the model already knows.
 - Decision: the main 2027 forecast stays results-only. The XI version forecasts just as well, so I use it for squad questions, such as what happens if a key bowler is unavailable.
 - Sampler: 6 divergences across 36 fits and a worst R-hat of 1.027 in one fit. No other fit went above 1.011.
+
+## 2026-11-11: Squad forecast and the bowling attack
+
+- Built the squad forecast. It simulates the series 4,000 times. In each Test, players are available according to availability.csv, anyone missing is replaced from cover_plan.csv, and both XIs are rated.
+- Half the time a player's fitness for a Test follows one draw for the whole series, so a player who misses one Test is more likely to miss another, as with a lasting injury.
+- First run: the first-class records made England's bowling worse, and losing Cummins and Hazlewood barely mattered. Checked the ratings and found the cause.
+- The attack was the five players with the most career Test balls. A replacement seamer such as Cook (186 balls) never counted, while part-timers such as Root (6,332 balls) did.
+- Fix for past Tests: the attack is now the five who bowled the most balls in that match. This uses who bowled, not how well, and the ratings still come from earlier years only.
+- Fix for 2027: the attack is chosen by role, with specialist bowlers first, then allrounders, then anyone else.
+- After the fix, a better attack is clearly worth something: 0.39 per 10 runs of bowling average (90% interval 0.03 to 0.76). Batting still adds nothing beyond team strength (0.06, interval -0.36 to 0.49).
+- Yearly back-test after the fix: results only and with XI ratings both score a log loss of 0.883 (Brier 0.519 and 0.520). The XI version was better in 7 of 12 years but worse in each of the last four.
+- Decision: the headline forecast stays results-only (England 47%, draw 13%, Australia 40%). The squad forecast is for what-if questions.
+- Squad forecast: everyone fit 53% / 13% / 34%. With availability simulated 49% / 13% / 37%. With first-class records 48% / 13% / 39%. Without Cummins and Hazlewood 50% / 13% / 37%.
+- England's fitness risk costs them about 4 points, mostly through Archer, who plays about 3 of 5 Tests.
+- Australia's depth protects them: Boland (21.0) and Neser (24.0) are rated as highly as Cummins (24.3) and Hazlewood (22.3).
+- Sampler: 9 divergences across 24 back-test fits, worst R-hat 1.012. The squad forecast fit had 0 divergences and a worst R-hat of 1.006.
