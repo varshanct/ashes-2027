@@ -37,7 +37,7 @@ a drawn series 13% and Australia 37%. See "Players, squads and availability".
 3. **Profile the five grounds** from their history: draw rates, first-innings scores, overs bowled, the toss and how
    batters were dismissed.
 4. **Fit a Bayesian model** in PyMC with Hamiltonian Monte Carlo (NUTS).
-5. **Rate every player and every XI** from ball-by-ball records, using only Tests played before each match.
+5. **Rate every player and every XI** from ball-by-ball records, using only Tests from earlier years.
 6. **Back-test it** on every year of Tests from 2015 to 2026 and on the 2019 and 2023 Ashes, always using only earlier
    Tests, with and without winning margins and XI ratings.
 7. **Forecast each 2027 Test and the series**, and compare with a forecast written down before any modelling.
@@ -104,7 +104,7 @@ Every back-test fits the model only on Tests played before the ones it forecasts
 
 The results-only model beat the past-results forecast on log loss in all 12 years. Adding winning margins was better
 in 4 years and worse in 8, and slightly worse overall: no reliable gain. Adding XI ratings was better in 7 years and
-worse in 5, including each of the last four, and level overall. The chart shows results only against XI ratings.
+worse in 5, including each of the last four, and level overall. The chart shows the latest run, which left out margins.
 
 ![Back-test on every year of Tests](figures/rolling_backtest.png)
 
@@ -141,7 +141,7 @@ forecast uses the results-only model: the simpler of two versions that perform t
   (slope 0.17, 0.14 to 0.21), and England's peak around 2010–11 and Australia's dip around 2010–13 both show. The
   back-test shows this extra movement does not predict the next year's Tests any better.
 - **The bowling attack matters beyond team strength; the batting line-up does not.** Each 10 runs of bowling average
-  is worth 0.39 (0.03 to 0.76). Each 10 runs of batting average is worth 0.06 (−0.36 to 0.49).
+  is worth 0.39 on the model's scale (0.03 to 0.76). Each 10 runs of batting average is worth 0.06 (−0.36 to 0.49).
 
 ![Team strength over time](figures/team_strength.png)
 
@@ -201,7 +201,7 @@ first available player in the cover plan for his role.
 
 - **Little information per Test.** The forecast model sees only win, draw or loss. Winning margins were tested and did
   not improve forecasts, so the yearly strengths stay heavily smoothed.
-- **Players add little beyond team strength.** The XI version forecasts no better than results only, because team
+- **Player ratings do not improve the forecasts.** The XI version forecasts no better than results only, because team
   strength is learned from results that already reflect who played.
 - **Availability and cover are my own judgement**, from injury and workload news up to November 2026.
 - **The first-class adjustment cannot be back-tested**, so it is shown as an alternative, not the main forecast.
