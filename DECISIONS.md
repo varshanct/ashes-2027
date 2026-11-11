@@ -472,3 +472,43 @@ one, which sees only results. It gives England a 47% chance of winning the serie
 13%, so Australia retain the urn 53% of the time. The version with margins gave England 45% and Australia 42%. Margins
 stay in the code as an option, and the strength chart from that version is kept, because it shows real changes in
 form that the results-only model smooths away, even though they do not improve the forecasts.
+
+---
+
+## Player ratings
+
+## 2026-11-10: Ratings from ball-by-ball data
+Each player gets a batting rating (runs per dismissal) and a bowling rating (runs conceded per wicket) from every
+Test he played before the date being forecast, so a back-test never sees the future. Retiring hurt is not a
+dismissal, run-outs are not credited to the bowler, and byes and leg byes are not charged to him; wides and no-balls
+are.
+
+## 2026-11-10: Recent Tests count more
+Each Test is weighted by its age, halving every two years. A Test two years ago counts half as much as one today,
+which lets the ratings follow form: Steve Smith rates 43.8 against a career average of 55.3.
+
+## 2026-11-10: Pulled towards the average for the player's batting position
+A player with little data is treated as if he also had 10 dismissals, or 10 wickets, at an average level. My first
+version used one batting average for everyone, which lifted tail-enders (Archer from 12.1 to 23.6) and held back
+top-order newcomers. Batters are now pulled towards the top-order average (positions 1 to 7, 34.8 runs per dismissal)
+or the lower-order average (8 to 11, 14.5), using each player's usual position from the order he came in to bat.
+
+## 2026-11-10: First-class records for players with fewer than 10 Tests
+Players with few Tests start from their first-class record instead of the role average, then their Test record is
+added on top. Batting uses 85% of the first-class average, because players very rarely average more in Tests than
+in first-class cricket; bowling uses the first-class average as it is, because Neser, Webster and Murphy all average
+better in Tests than first-class. The figures are in data/manual/first_class.csv, taken from each player's
+Wikipedia page, which quotes ESPNcricinfo with a date. Cricsheet has no county or Sheffield Shield data, so this
+cannot be back-tested; it is a judgement, and the forecast will be shown with and without it.
+
+## 2026-11-10: First-class records trusted in proportion to their size
+My first version treated every first-class record as worth 10 wickets or dismissals, so Bethell's 18 part-time
+wickets at 59.5 outweighed his 8 Test wickets and rated him 49.3 as a bowler. Each first-class record is now pulled
+towards the role average in proportion to its size, assuming 1.5 dismissals per first-class match: Bethell is 42.6,
+while Cook's 370 wickets and Neser's 440 keep almost all their weight.
+
+## 2026-11-10: Ratings checked against current form
+Robinson rates as England's best bowler (18.0), which matches his Test average below 19 after the 2026 Pakistan
+series. Boland, Hazlewood, Starc and Cummins are Australia's best bowlers, and Root and Brook England's best
+batters. Two things the ratings do not yet account for, both testable on the yearly back-test later: the strength
+of the opposition, and the conditions (a player's record in England with the Dukes ball).
