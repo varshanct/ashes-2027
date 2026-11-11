@@ -67,7 +67,7 @@ def test_backtest_year_uses_only_earlier_tests_and_skips_new_teams(monkeypatch):
         return fake_sampler(data, draws, tune, chains, seed)
 
     monkeypatch.setattr(rolling_backtest, "sample_posterior", recording_sampler)
-    args = argparse.Namespace(draws=20, tune=20, chains=2, seed=1)
+    args = argparse.Namespace(draws=20, tune=20, chains=2, seed=1, versions=["results", "margins"])
     rows, checks = backtest_year(2021, matches, innings, ALIASES, full_table, args)
     # Four 2020 Tests to learn from; the results-only fit ignores the three margins, the other uses them.
     assert seen == [(4, 0), (4, 3)]
@@ -78,10 +78,11 @@ def test_backtest_year_uses_only_earlier_tests_and_skips_new_teams(monkeypatch):
 
 def test_scores_by_year_averages_each_year_and_all_together():
     tests = pd.DataFrame({"year": [2020, 2020, 2021]})
-    for key in rolling_backtest.FORECASTS:
+    names = rolling_backtest.forecasts(["results", "margins"])
+    for key in names:
         tests[f"log_loss_{key}"] = [1.0, 0.5, 2.0]
         tests[f"brier_{key}"] = [0.6, 0.4, 0.8]
-    scores = scores_by_year(tests)
+    scores = scores_by_year(tests, names)
     assert scores.loc[2020, "tests"] == 2
     assert scores.loc[2020, "With margins log loss"] == pytest.approx(0.75)
     assert scores.loc["All years", "With margins log loss"] == pytest.approx(3.5 / 3)
@@ -97,7 +98,8 @@ def test_command_saves_every_file(monkeypatch, tmp_path, capsys):
     innings.to_csv(processed / "innings.csv", index=False)
     ALIASES.to_csv(manual / "venue_aliases.csv", index=False)
     monkeypatch.setattr(rolling_backtest, "sample_posterior", fake_sampler)
-    argv = ["rolling_backtest", "--first", "2021", "--last", "2021", "--draws", "20", "--chains", "2",
+    argv = ["rolling_backtest", "--first", "2021", "--last", "2021", "--versions", "results,margins",
+            "--draws", "20", "--chains", "2",
             "--processed", str(processed), "--manual", str(manual), "--figures", str(tmp_path / "figures")]
     monkeypatch.setattr(sys, "argv", argv)
     rolling_backtest.main()

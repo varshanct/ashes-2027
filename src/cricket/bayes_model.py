@@ -7,12 +7,14 @@ import pytensor.tensor as pt
 PARAMETERS = ["strength", "sigma_start", "sigma_drift", "home_advantage",
               "draw_base", "draw_trend", "sigma_venue", "venue_effect"]
 MARGIN_PARAMETERS = ["margin_base", "margin_slope", "margin_sigma"]
+XI_PARAMETERS = ["xi_bat_effect", "xi_bowl_effect"]
 
 
 def build_model(data):
     """Team strengths that drift year to year, home advantage, and a draw band that depends on venue and era.
 
     If the data includes winning margins, the size of each win is modelled too, from the same strengths.
+    If it includes XI gaps, the strength of each side's XI on the day is added on top of team strength.
     """
     coords = {"team": data.teams, "year": data.years, "venue": data.venues}
     with pm.Model(coords=coords) as model:
@@ -37,6 +39,13 @@ def build_model(data):
         # Each Test: strength gap plus home advantage, inside a draw band of the right width.
         eta = (strength[data.year_idx, data.team_a] - strength[data.year_idx, data.team_b]
                + home_advantage * data.home)
+
+        # How much a stronger XI on the day is worth, per 10 runs of batting or bowling average.
+        if len(data.xi_bat):
+            xi_bat_effect = pm.Normal("xi_bat_effect", 0.0, 1.0)
+            xi_bowl_effect = pm.Normal("xi_bowl_effect", 0.0, 1.0)
+            eta = eta + xi_bat_effect * data.xi_bat + xi_bowl_effect * data.xi_bowl
+
         log_width = draw_base + venue_effect[data.venue_idx] + draw_trend * data.decade
         half = pt.exp(log_width) / 2
         pm.OrderedLogistic("result", eta=eta, cutpoints=pt.stack([-half, half], axis=-1), observed=data.result)
@@ -58,7 +67,7 @@ def fit(model, draws=1000, tune=1000, chains=4, seed=2027, cores=None, progressb
     with model:
         idata = pm.sample(draws=draws, tune=tune, chains=chains, cores=cores, random_seed=seed,
                           target_accept=0.95, progressbar=progressbar)
-    names = [name for name in PARAMETERS + MARGIN_PARAMETERS if name in idata.posterior]
+    names = [n for n in PARAMETERS + MARGIN_PARAMETERS + XI_PARAMETERS if n in idata.posterior]
     samples = {name: np.asarray(idata.posterior[name].values) for name in names}
     divergences = int(np.asarray(idata.sample_stats["diverging"].values).sum())
     return samples, divergences

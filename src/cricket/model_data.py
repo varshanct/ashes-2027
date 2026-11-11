@@ -8,6 +8,7 @@ import pandas as pd
 EXCLUDED_TEAMS = {"ICC World XI"}  # a one-off composite side, not a national team
 HOME_SHARE = 0.8      # a team counts as the home side of a place if it plays in at least 80% of Tests there
 TREND_BASE_YEAR = 2019
+XI_SCALE = 10             # XI gaps are measured in units of 10 runs of batting or bowling average
 
 
 def home_team_by_place(matches):
@@ -58,6 +59,22 @@ def build_model_table(matches, aliases, rpw=None):
     return m.sort_values(["date_start", "match_id"])[columns].reset_index(drop=True)
 
 
+def add_xi(table, xi):
+    """Add each Test's XI gaps from team1's point of view, in units of XI_SCALE runs.
+
+    xi_bat: team1's batting rating minus team2's. xi_bowl: team2's bowling rating minus team1's, because a
+    lower bowling rating is better. Positive means team1's XI is stronger. A Test with no XI ratings (before
+    2004) gets 0, as if the two XIs were even.
+    """
+    one = xi.rename(columns={"team": "team1", "bat_xi": "bat1", "bowl_xi": "bowl1"})
+    two = xi.rename(columns={"team": "team2", "bat_xi": "bat2", "bowl_xi": "bowl2"})
+    out = table.merge(one[["match_id", "team1", "bat1", "bowl1"]], on=["match_id", "team1"], how="left")
+    out = out.merge(two[["match_id", "team2", "bat2", "bowl2"]], on=["match_id", "team2"], how="left")
+    out["xi_bat"] = ((out["bat1"] - out["bat2"]) / XI_SCALE).fillna(0.0)
+    out["xi_bowl"] = ((out["bowl2"] - out["bowl1"]) / XI_SCALE).fillna(0.0)
+    return out.drop(columns=["bat1", "bat2", "bowl1", "bowl2"])
+
+
 @dataclass
 class ModelData:
     """Everything the model needs, as plain arrays, plus the labels that go with them."""
@@ -75,6 +92,9 @@ class ModelData:
     margin_idx: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=int))
     margin: np.ndarray = field(default_factory=lambda: np.zeros(0))
     margin_sign: np.ndarray = field(default_factory=lambda: np.zeros(0))
+    # XI gaps for every Test, from team1's point of view (empty unless XI ratings are used).
+    xi_bat: np.ndarray = field(default_factory=lambda: np.zeros(0))
+    xi_bowl: np.ndarray = field(default_factory=lambda: np.zeros(0))
 
 
 def to_model_data(table, extra_venues=()):
@@ -84,12 +104,14 @@ def to_model_data(table, extra_venues=()):
     venues = sorted(set(table["venue_key"]) | set(extra_venues))
     team_number = {t: i for i, t in enumerate(teams)}
     venue_number = {v: i for i, v in enumerate(venues)}
-    margins = {}
+    margins = {}                     # optional extras: winning margins and XI gaps
     if "margin" in table.columns:
         won = table["margin"].notna().to_numpy() & (table["result"] != 1).to_numpy()
         margins = {"margin_idx": np.flatnonzero(won),
                    "margin": table["margin"].to_numpy()[won],
                    "margin_sign": np.where(table["result"].to_numpy()[won] == 2, 1.0, -1.0)}
+    if "xi_bat" in table.columns:
+        margins.update(xi_bat=table["xi_bat"].to_numpy(), xi_bowl=table["xi_bowl"].to_numpy())
     return ModelData(
         teams=teams,
         years=years,
